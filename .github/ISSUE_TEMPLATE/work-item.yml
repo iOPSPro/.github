@@ -4,6 +4,7 @@ title: "[Work Item]: "
 labels:
   - work-item
   - needs-triage
+  - needs-testing
 projects:
   - iOPSPro/5
 body:
