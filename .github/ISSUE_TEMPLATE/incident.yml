@@ -1,0 +1,135 @@
+name: Incident
+description: Outage or urgent operational issue (production impact)
+title: "[Incident]: "
+labels:
+  - incident
+  - high-priority
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for incidents/outages and urgent production-impacting issues.
+
+        **Do not include secrets** (passwords, tokens, private keys). If you need to share sensitive details, coordinate out-of-band.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - SEV-1 (Critical outage / major customer impact)
+        - SEV-2 (Major degradation / limited outage)
+        - SEV-3 (Minor impact / elevated errors)
+        - SEV-4 (No customer impact / investigation)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: Current status
+      options:
+        - Investigating
+        - Mitigating
+        - Monitoring
+        - Resolved
+    validations:
+      required: true
+
+  - type: input
+    id: start_time
+    attributes:
+      label: Start time (approx.)
+      description: When did the incident start?
+      placeholder: e.g., 2026-04-14 10:05 CT
+    validations:
+      required: true
+
+  - type: input
+    id: detected_by
+    attributes:
+      label: Detected by
+      placeholder: e.g., customer report / monitoring alert / on-call / internal user
+    validations:
+      required: false
+
+  - type: input
+    id: customer
+    attributes:
+      label: Customer / tenant (if applicable)
+      placeholder: e.g., Acme Corp / tenant-123 / multiple customers
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: e.g., prod / staging / region / cluster
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who/what is impacted and how?
+      placeholder: |
+        - User impact:
+        - Scope:
+        - Error rates / latency / downtime:
+    validations:
+      required: true
+
+  - type: textarea
+    id: suspected_cause
+    attributes:
+      label: Suspected cause
+      placeholder: What do you think is happening? Include any recent changes/deployments.
+    validations:
+      required: false
+
+  - type: textarea
+    id: actions_taken
+    attributes:
+      label: Actions taken
+      description: What has been tried so far?
+      placeholder: |
+        - 10:10 CT: ...
+        - 10:18 CT: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation / workaround
+      description: How are we restoring service or reducing impact?
+    validations:
+      required: false
+
+  - type: textarea
+    id: links
+    attributes:
+      label: Links
+      description: Add runbooks, dashboards, logs, deployments, status pages, or related incidents (redact as needed).
+      placeholder: |
+        - Runbook:
+        - Dashboard:
+        - Deployment:
+        - Related issues:
+    validations:
+      required: false
+
+  - type: textarea
+    id: followups
+    attributes:
+      label: Follow-up items (post-incident)
+      description: What should we do to prevent recurrence?
+      placeholder: |
+        - [ ] Root cause analysis
+        - [ ] Add monitoring/alerts
+        - [ ] Add tests/guardrails
+    validations:
+      required: false

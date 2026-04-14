@@ -1,0 +1,101 @@
+name: Feature request
+description: Propose an enhancement or new capability
+title: "[Feature]: "
+labels:
+  - enhancement
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form to propose new functionality or an improvement.
+
+        Keep details safe for a public repository (no customer secrets, credentials, or private URLs).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem are you trying to solve? Who is affected?
+      placeholder: |
+        As a <user>, I want <capability>, so that <benefit>.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like to see built?
+      placeholder: Describe the desired behavior, UX, APIs, and any constraints.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches have you considered?
+      placeholder: e.g., Do nothing, use an existing tool, adjust process, different design.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this?
+      options:
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: textarea
+    id: business_value
+    attributes:
+      label: Business value / impact
+      description: Why does this matter (time saved, revenue, risk reduction, user satisfaction)?
+      placeholder: |
+        - Impact:
+        - Approx. users affected:
+        - Value:
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria / definition of done
+      description: How will we know this is complete?
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / blockers
+      placeholder: Link related issues, repos, vendors, approvals, or migrations.
+    validations:
+      required: false
+
+  - type: input
+    id: customer
+    attributes:
+      label: Customer (if applicable)
+      description: Optional. Who requested this?
+      placeholder: e.g., Internal / Acme Corp / Multiple customers
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Mockups, references, links, or notes.
+    validations:
+      required: false

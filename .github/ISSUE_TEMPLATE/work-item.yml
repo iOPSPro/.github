@@ -1,0 +1,98 @@
+name: Work item
+description: General task, migration work, process improvements, or admin work
+title: "[Work Item]: "
+labels:
+  - work-item
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for non-bug, non-incident tasks (migration, platform work, governance, documentation, chores).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What needs to be done?
+      placeholder: A clear, one-paragraph description of the task.
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal / outcome
+      description: What is the intended end state?
+      placeholder: e.g., "All repos have topic tags and standardized labels."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: work_type
+    attributes:
+      label: Work type
+      options:
+        - Migration
+        - Governance / compliance
+        - Platform / infrastructure
+        - Process / documentation
+        - Cleanup / refactor
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is in scope and out of scope?
+      placeholder: |
+        In scope:
+        Out of scope:
+    validations:
+      required: false
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks / checklist
+      description: Break down the work into actionable items.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: definition_of_done
+    attributes:
+      label: Definition of done
+      placeholder: Clear completion criteria (tests, docs, approvals, rollout).
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / blockers
+      placeholder: Link related issues, repos, approvals, or vendor items.
+    validations:
+      required: false
+
+  - type: input
+    id: owner
+    attributes:
+      label: Proposed owner (optional)
+      placeholder: "@username or team"
+    validations:
+      required: false
+
+  - type: input
+    id: target_date
+    attributes:
+      label: Target date (optional)
+      description: When do you want this completed?
+      placeholder: e.g., 2026-05-15
+    validations:
+      required: false

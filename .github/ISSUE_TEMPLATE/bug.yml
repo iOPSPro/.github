@@ -1,0 +1,135 @@
+name: Bug report
+description: Report a defect, regression, or broken behavior
+title: "[Bug]: "
+labels:
+  - bug
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        **Please do not include secrets** (passwords, tokens, private keys) in this report. If you need to share logs, redact sensitive data.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How bad is the impact?
+      options:
+        - Critical (production down / data loss / security risk)
+        - High (major functionality broken)
+        - Medium (partial functionality broken / workaround exists)
+        - Low (minor issue / cosmetic)
+    validations:
+      required: true
+
+  - type: input
+    id: customer
+    attributes:
+      label: Customer (if applicable)
+      description: Optional. Who is impacted?
+      placeholder: e.g., Internal / Acme Corp / Multiple customers
+    validations:
+      required: false
+
+  - type: input
+    id: site
+    attributes:
+      label: Site / environment
+      description: Where is this happening?
+      placeholder: e.g., prod / staging / dev / tenant-123 / us-east-1
+    validations:
+      required: false
+
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: Affected area
+      options:
+        - UI
+        - API
+        - Backend service
+        - Infrastructure
+        - CI/CD
+        - Documentation
+        - Other / Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: Describe the problem and the user-visible impact.
+      placeholder: |
+        When I try to ..., I see ...
+        This prevents ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide clear steps so someone else can reproduce.
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+      placeholder: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual behavior
+      placeholder: What actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence (logs/screenshots/links)
+      description: Add any relevant logs, screenshots, or links. Redact sensitive data.
+      placeholder: |
+        - Screenshot:
+        - Logs (redacted):
+        - Links:
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit (if known)
+      placeholder: e.g., v2.3.1 / commit abc123 / build 2026.04.14.1
+    validations:
+      required: false
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: If you found a workaround, describe it.
+      placeholder: e.g., Refresh page / retry / use endpoint X / rollback to v2.3.0
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Anything else helpful (recent changes, related issues, suspected cause).
+    validations:
+      required: false
