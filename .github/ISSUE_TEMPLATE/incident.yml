@@ -5,6 +5,7 @@ labels:
   - incident
   - high-priority
   - needs-triage
+  - needs-testing
 projects:
   - iOPSPro/5
 body:

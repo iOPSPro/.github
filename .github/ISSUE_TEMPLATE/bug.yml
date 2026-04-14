@@ -4,6 +4,7 @@ title: "[Bug]: "
 labels:
   - bug
   - needs-triage
+  - needs-testing
 projects:
   - iOPSPro/5
 body:
