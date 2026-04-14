@@ -5,6 +5,8 @@ labels:
   - incident
   - high-priority
   - needs-triage
+projects:
+  - iOPSPro/5
 body:
   - type: markdown
     attributes:

@@ -4,6 +4,8 @@ title: "[Work Item]: "
 labels:
   - work-item
   - needs-triage
+projects:
+  - iOPSPro/5
 body:
   - type: markdown
     attributes:
