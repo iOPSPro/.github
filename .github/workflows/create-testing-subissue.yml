@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       repo:
-        description: Repository name that contains the parent issue (no owner prefix)
+        description: Repository name that contains the parent issue
         required: true
         type: string
       issue_number:
@@ -16,56 +16,135 @@ on:
         required: true
         type: number
       parent_title:
-        description: Title of the parent issue (used to build the child issue title)
+        description: Title of the parent issue
         required: true
         type: string
       has_needs_testing:
-        description: True if the parent issue has the `needs-testing` label
+        description: True if the parent issue has the needs-testing label
         required: true
         type: boolean
 
-# This is a reusable workflow scaffold.
-# It does NOT run automatically for every repository in the organization.
-# Future participating repositories will add a small caller workflow (in that repository)
-# that triggers on issue events and invokes this workflow via `uses: iOPSPro/.github/.github/workflows/create-testing-subissue.yml@<ref>`.
-
 jobs:
   create_testing_subissue:
-    name: Create testing child issue (scaffold)
+    name: Create testing child issue
     runs-on: ubuntu-latest
     if: ${{ inputs.has_needs_testing }}
     permissions:
       issues: write
       contents: read
+
     steps:
-      - name: Scaffold info
-        run: |
-          echo "Scaffold only: would create a child issue for ${{ inputs.owner }}/${{ inputs.repo }}#${{ inputs.issue_number }}"
-          echo "Parent title: ${{ inputs.parent_title }}"
-          echo "Child title: Testing: ${{ inputs.parent_title }}"
-          echo "Labels to apply to child: testing"
-          echo "Optional label to apply to parent in future: testing-created"
+      - name: Check whether testing child already exists
+        id: check_existing
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = '${{ inputs.owner }}';
+            const repo = '${{ inputs.repo }}';
+            const issue_number = Number('${{ inputs.issue_number }}');
 
-      # TODO: Create the child issue titled "Testing: <parent title>" in the same repo.
-      # - Include a link back to the parent issue in the body.
-      # - Apply the `testing` label to the child issue.
-      #
-      # TODO: Optionally apply `testing-created` to the parent issue to prevent duplicates.
-      #
-      # Implementation options (future):
-      # - GitHub CLI (`gh api`) using the REST API
-      # - `actions/github-script` (GraphQL/REST)
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number
+            });
 
-# Example per-repo caller workflow (comments only):
+            const labels = issue.labels.map(label =>
+              typeof label === 'string' ? label : label.name
+            );
+
+            const alreadyCreated = labels.includes('testing-created');
+            core.setOutput('already_created', alreadyCreated ? 'true' : 'false');
+
+      - name: Create testing child issue
+        if: ${{ steps.check_existing.outputs.already_created != 'true' }}
+        id: create_child
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = '${{ inputs.owner }}';
+            const repo = '${{ inputs.repo }}';
+            const parentIssueNumber = Number('${{ inputs.issue_number }}');
+            const parentTitle = '${{ inputs.parent_title }}';
+
+            const childTitle = `Testing: ${parentTitle}`;
+            const childBody = [
+              `Testing child issue for #${parentIssueNumber}`,
+              ``,
+              `Parent issue: #${parentIssueNumber}`,
+              ``,
+              `## Testing Checklist`,
+              `- [ ] Validate acceptance criteria`,
+              `- [ ] Validate no regressions`,
+              `- [ ] Capture screenshots / notes as needed`
+            ].join('\n');
+
+            const created = await github.rest.issues.create({
+              owner,
+              repo,
+              title: childTitle,
+              body: childBody,
+              labels: ['testing']
+            });
+
+            core.setOutput('child_issue_number', String(created.data.number));
+
+      - name: Add testing-created label to parent
+        if: ${{ steps.check_existing.outputs.already_created != 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = '${{ inputs.owner }}';
+            const repo = '${{ inputs.repo }}';
+            const issue_number = Number('${{ inputs.issue_number }}');
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number
+            });
+
+            const labels = issue.labels.map(label =>
+              typeof label === 'string' ? label : label.name
+            );
+
+            const mergedLabels = [...new Set([...labels, 'testing-created'])];
+
+            await github.rest.issues.update({
+              owner,
+              repo,
+              issue_number,
+              labels: mergedLabels
+            });
+
+      - name: Comment on parent issue
+        if: ${{ steps.check_existing.outputs.already_created != 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = '${{ inputs.owner }}';
+            const repo = '${{ inputs.repo }}';
+            const issue_number = Number('${{ inputs.issue_number }}');
+            const childIssueNumber = '${{ steps.create_child.outputs.child_issue_number }}';
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body: `Created testing child issue: #${childIssueNumber}`
+            });
+
+# Example per-repo caller workflow:
 #
 # name: Spawn testing issue
+#
 # on:
 #   issues:
-#     types: [labeled, opened]
+#     types: [opened]
 #
 # jobs:
-#   call_reusable:
-#     if: ${{ github.event.issue.state == 'open' }}
+#   call-reusable-worker:
+#     if: ${{ github.event.issue.state == 'open' && contains(github.event.issue.labels.*.name, 'needs-testing') }}
 #     uses: iOPSPro/.github/.github/workflows/create-testing-subissue.yml@main
 #     with:
 #       owner: ${{ github.repository_owner }}
