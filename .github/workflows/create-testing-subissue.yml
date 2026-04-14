@@ -89,6 +89,23 @@ jobs:
 
             core.setOutput('child_issue_number', String(created.data.number));
 
+      - name: Attach testing child as sub-issue
+        if: ${{ steps.check_existing.outputs.already_created != 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = '${{ inputs.owner }}';
+            const repo = '${{ inputs.repo }}';
+            const parentIssueNumber = Number('${{ inputs.issue_number }}');
+            const childIssueNumber = Number('${{ steps.create_child.outputs.child_issue_number }}');
+
+            await github.request('POST /repos/{owner}/{repo}/issues/{issue_number}/sub_issues', {
+              owner,
+              repo,
+              issue_number: parentIssueNumber,
+              sub_issue_id: childIssueNumber
+            });
+
       - name: Add testing-created label to parent
         if: ${{ steps.check_existing.outputs.already_created != 'true' }}
         uses: actions/github-script@v7
