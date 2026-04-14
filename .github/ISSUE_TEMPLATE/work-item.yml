@@ -13,7 +13,8 @@ body:
       value: |
         Use this template for non-bug, non-incident tasks (migration, platform work, governance, documentation, chores).
 
-        Note: GitHub Issue Forms cannot conditionally add labels based on dropdown answers. If testing is required, add the `needs-testing` label after you create the issue.
+        Issues created from this form automatically receive the `needs-testing` label.
+        Future automation will use that label to create a related testing child issue.
 
   - type: textarea
     id: objective
@@ -78,23 +79,6 @@ body:
     validations:
       required: false
 
-  - type: markdown
-    attributes:
-      value: |
-        **Testing child issue automation (future):**
-        - If **Testing Required** is **Yes**, add the `needs-testing` label after creating this issue.
-        - Future automation will use `needs-testing` on the parent to create a child issue titled `Testing: <parent title>` labeled `testing`.
-
-  - type: dropdown
-    id: testing_required
-    attributes:
-      label: Testing Required
-      options:
-        - "Yes"
-        - "No"
-    validations:
-      required: true
-
   - type: textarea
     id: scope
     attributes:
@@ -123,12 +107,13 @@ body:
       label: Definition of done
       placeholder: Clear completion criteria (tests, docs, approvals, rollout).
     validations:
-      required: false
+      required: true
 
   - type: textarea
     id: dependencies
     attributes:
       label: Dependencies / blockers
+      description: List anything this work depends on or anything currently blocking it.
       placeholder: Link related issues, repos, approvals, or vendor items.
     validations:
       required: false
