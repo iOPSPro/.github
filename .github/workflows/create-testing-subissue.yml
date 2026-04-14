@@ -1,0 +1,76 @@
+name: Create testing sub-issue (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        description: Organization or user that owns the repo containing the parent issue
+        required: true
+        type: string
+      repo:
+        description: Repository name that contains the parent issue (no owner prefix)
+        required: true
+        type: string
+      issue_number:
+        description: Issue number of the parent issue
+        required: true
+        type: number
+      parent_title:
+        description: Title of the parent issue (used to build the child issue title)
+        required: true
+        type: string
+      has_needs_testing:
+        description: True if the parent issue has the `needs-testing` label
+        required: true
+        type: boolean
+
+# This is a reusable workflow scaffold.
+# It does NOT run automatically for every repository in the organization.
+# Future participating repositories will add a small caller workflow (in that repository)
+# that triggers on issue events and invokes this workflow via `uses: iOPSPro/.github/.github/workflows/create-testing-subissue.yml@<ref>`.
+
+jobs:
+  create_testing_subissue:
+    name: Create testing child issue (scaffold)
+    runs-on: ubuntu-latest
+    if: ${{ inputs.has_needs_testing }}
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Scaffold info
+        run: |
+          echo "Scaffold only: would create a child issue for ${{ inputs.owner }}/${{ inputs.repo }}#${{ inputs.issue_number }}"
+          echo "Parent title: ${{ inputs.parent_title }}"
+          echo "Child title: Testing: ${{ inputs.parent_title }}"
+          echo "Labels to apply to child: testing"
+          echo "Optional label to apply to parent in future: testing-created"
+
+      # TODO: Create the child issue titled "Testing: <parent title>" in the same repo.
+      # - Include a link back to the parent issue in the body.
+      # - Apply the `testing` label to the child issue.
+      #
+      # TODO: Optionally apply `testing-created` to the parent issue to prevent duplicates.
+      #
+      # Implementation options (future):
+      # - GitHub CLI (`gh api`) using the REST API
+      # - `actions/github-script` (GraphQL/REST)
+
+# Example per-repo caller workflow (comments only):
+#
+# name: Spawn testing issue
+# on:
+#   issues:
+#     types: [labeled, opened]
+#
+# jobs:
+#   call_reusable:
+#     if: ${{ github.event.issue.state == 'open' }}
+#     uses: iOPSPro/.github/.github/workflows/create-testing-subissue.yml@main
+#     with:
+#       owner: ${{ github.repository_owner }}
+#       repo: ${{ github.event.repository.name }}
+#       issue_number: ${{ github.event.issue.number }}
+#       parent_title: ${{ github.event.issue.title }}
+#       has_needs_testing: ${{ contains(github.event.issue.labels.*.name, 'needs-testing') }}
+#     secrets: inherit

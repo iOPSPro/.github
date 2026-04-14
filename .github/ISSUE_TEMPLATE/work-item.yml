@@ -12,23 +12,16 @@ body:
       value: |
         Use this template for non-bug, non-incident tasks (migration, platform work, governance, documentation, chores).
 
-  - type: textarea
-    id: summary
-    attributes:
-      label: Summary
-      description: What needs to be done?
-      placeholder: A clear, one-paragraph description of the task.
-    validations:
-      required: true
+        Note: GitHub Issue Forms cannot conditionally add labels based on dropdown answers. If testing is required, add the `needs-testing` label after you create the issue.
 
   - type: textarea
-    id: goal
+    id: objective
     attributes:
-      label: Goal / outcome
-      description: What is the intended end state?
-      placeholder: e.g., "All repos have topic tags and standardized labels."
+      label: Objective
+      description: What needs to be done and why?
+      placeholder: A clear, one-paragraph objective and desired outcome.
     validations:
-      required: false
+      required: true
 
   - type: dropdown
     id: work_type
@@ -41,6 +34,63 @@ body:
         - Process / documentation
         - Cleanup / refactor
         - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: functional_area
+    attributes:
+      label: Functional area
+      options:
+        - UI
+        - API
+        - Backend service
+        - Infrastructure
+        - CI/CD
+        - Documentation
+        - Other / Unknown
+    validations:
+      required: true
+
+  - type: input
+    id: requested_by
+    attributes:
+      label: Requested by
+      description: Who requested this work?
+      placeholder: e.g., @username / Team / Stakeholder
+    validations:
+      required: false
+
+  - type: input
+    id: customer
+    attributes:
+      label: Customer (if applicable)
+      placeholder: e.g., Internal / Acme Corp / Multiple customers
+    validations:
+      required: false
+
+  - type: input
+    id: site
+    attributes:
+      label: Site / environment (if applicable)
+      placeholder: e.g., prod / staging / dev / tenant-123 / us-east-1
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        **Testing child issue automation (future):**
+        - If **Testing Required** is **Yes**, add the `needs-testing` label after creating this issue.
+        - Future automation will use `needs-testing` on the parent to create a child issue titled `Testing: <parent title>` labeled `testing`.
+
+  - type: dropdown
+    id: testing_required
+    attributes:
+      label: Testing Required
+      options:
+        - "Yes"
+        - "No"
     validations:
       required: true
 

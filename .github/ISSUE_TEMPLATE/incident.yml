@@ -39,6 +39,17 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: testing_followup
+    attributes:
+      label: Follow-up testing needed?
+      description: Optional. Use `needs-testing` later for planned testing work, not during active incident response.
+      options:
+        - "Yes"
+        - "No"
+    validations:
+      required: false
+
   - type: input
     id: start_time
     attributes:

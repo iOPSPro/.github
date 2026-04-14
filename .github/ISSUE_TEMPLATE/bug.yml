@@ -60,6 +60,24 @@ body:
     validations:
       required: true
 
+  - type: markdown
+    attributes:
+      value: |
+        **Testing child issue automation (future):**
+        - GitHub Issue Forms cannot conditionally add labels based on dropdown answers.
+        - If testing work is required, add the `needs-testing` label after creating this issue.
+        - Future automation will use `needs-testing` to create a testing child issue labeled `testing`.
+
+  - type: dropdown
+    id: testing_required
+    attributes:
+      label: Testing Required
+      options:
+        - "Yes"
+        - "No"
+    validations:
+      required: true
+
   - type: textarea
     id: what_happened
     attributes:
