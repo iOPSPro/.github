@@ -89,12 +89,3 @@ body:
       placeholder: "@username or team"
     validations:
       required: false
-
-  - type: input
-    id: target_date
-    attributes:
-      label: Target date (optional)
-      description: When do you want this completed?
-      placeholder: e.g., 2026-05-15
-    validations:
-      required: false

@@ -34,27 +34,6 @@ body:
       required: true
 
   - type: textarea
-    id: alternatives
-    attributes:
-      label: Alternatives considered
-      description: What other approaches have you considered?
-      placeholder: e.g., Do nothing, use an existing tool, adjust process, different design.
-    validations:
-      required: false
-
-  - type: dropdown
-    id: priority
-    attributes:
-      label: Priority
-      description: How urgent is this?
-      options:
-        - High
-        - Medium
-        - Low
-    validations:
-      required: true
-
-  - type: textarea
     id: business_value
     attributes:
       label: Business value / impact
@@ -82,15 +61,6 @@ body:
     attributes:
       label: Dependencies / blockers
       placeholder: Link related issues, repos, vendors, approvals, or migrations.
-    validations:
-      required: false
-
-  - type: input
-    id: customer
-    attributes:
-      label: Customer (if applicable)
-      description: Optional. Who requested this?
-      placeholder: e.g., Internal / Acme Corp / Multiple customers
     validations:
       required: false
 
