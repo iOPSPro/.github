@@ -46,39 +46,6 @@ body:
     validations:
       required: false
 
-  - type: dropdown
-    id: affected_area
-    attributes:
-      label: Affected area
-      options:
-        - UI
-        - API
-        - Backend service
-        - Infrastructure
-        - CI/CD
-        - Documentation
-        - Other / Unknown
-    validations:
-      required: true
-
-  - type: markdown
-    attributes:
-      value: |
-        **Testing child issue automation (future):**
-        - GitHub Issue Forms cannot conditionally add labels based on dropdown answers.
-        - If testing work is required, add the `needs-testing` label after creating this issue.
-        - Future automation will use `needs-testing` to create a testing child issue labeled `testing`.
-
-  - type: dropdown
-    id: testing_required
-    attributes:
-      label: Testing Required
-      options:
-        - "Yes"
-        - "No"
-    validations:
-      required: true
-
   - type: textarea
     id: what_happened
     attributes:
@@ -103,22 +70,6 @@ body:
       required: true
 
   - type: textarea
-    id: expected_behavior
-    attributes:
-      label: Expected behavior
-      placeholder: What did you expect to happen?
-    validations:
-      required: true
-
-  - type: textarea
-    id: actual_behavior
-    attributes:
-      label: Actual behavior
-      placeholder: What actually happened?
-    validations:
-      required: true
-
-  - type: textarea
     id: evidence
     attributes:
       label: Evidence (logs/screenshots/links)
@@ -127,23 +78,6 @@ body:
         - Screenshot:
         - Logs (redacted):
         - Links:
-    validations:
-      required: false
-
-  - type: input
-    id: version
-    attributes:
-      label: Version / commit (if known)
-      placeholder: e.g., v2.3.1 / commit abc123 / build 2026.04.14.1
-    validations:
-      required: false
-
-  - type: textarea
-    id: workaround
-    attributes:
-      label: Workaround
-      description: If you found a workaround, describe it.
-      placeholder: e.g., Refresh page / retry / use endpoint X / rollback to v2.3.0
     validations:
       required: false
 
