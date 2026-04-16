@@ -25,35 +25,6 @@ body:
     validations:
       required: true
 
-  - type: dropdown
-    id: work_type
-    attributes:
-      label: Work type
-      options:
-        - Migration
-        - Governance / compliance
-        - Platform / infrastructure
-        - Process / documentation
-        - Cleanup / refactor
-        - Other
-    validations:
-      required: true
-
-  - type: dropdown
-    id: functional_area
-    attributes:
-      label: Functional area
-      options:
-        - UI
-        - API
-        - Backend service
-        - Infrastructure
-        - CI/CD
-        - Documentation
-        - Other / Unknown
-    validations:
-      required: true
-
   - type: input
     id: requested_by
     attributes:
@@ -71,14 +42,6 @@ body:
     validations:
       required: false
 
-  - type: input
-    id: site
-    attributes:
-      label: Site / environment (if applicable)
-      placeholder: e.g., prod / staging / dev / tenant-123 / us-east-1
-    validations:
-      required: false
-
   - type: textarea
     id: scope
     attributes:
@@ -87,17 +50,6 @@ body:
       placeholder: |
         In scope:
         Out of scope:
-    validations:
-      required: false
-
-  - type: textarea
-    id: tasks
-    attributes:
-      label: Tasks / checklist
-      description: Break down the work into actionable items.
-      placeholder: |
-        - [ ] ...
-        - [ ] ...
     validations:
       required: false
 
