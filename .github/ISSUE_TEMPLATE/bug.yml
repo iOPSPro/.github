@@ -37,15 +37,6 @@ body:
     validations:
       required: false
 
-  - type: input
-    id: site
-    attributes:
-      label: Site / environment
-      description: Where is this happening?
-      placeholder: e.g., prod / staging / dev / tenant-123 / us-east-1
-    validations:
-      required: false
-
   - type: textarea
     id: what_happened
     attributes:
