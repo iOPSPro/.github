@@ -1,6 +1,7 @@
 name: Incident
 description: Outage or urgent operational issue (production impact)
 title: "[Incident]: "
+type: Bug
 labels:
   - incident
   - high-priority

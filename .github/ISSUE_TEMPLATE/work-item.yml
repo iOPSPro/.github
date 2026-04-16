@@ -1,6 +1,7 @@
 name: Work item
 description: General task, migration work, process improvements, or admin work
 title: "[Work Item]: "
+type: Task
 labels:
   - work-item
   - needs-triage
