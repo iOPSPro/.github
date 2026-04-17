@@ -1,0 +1,104 @@
+name: Apply issue form iteration label (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        description: Organization or user that owns the repository containing the issue
+        required: true
+        type: string
+      repo:
+        description: Repository name containing the issue
+        required: true
+        type: string
+      issue_number:
+        description: Issue number to inspect
+        required: true
+        type: number
+      question_heading:
+        description: Issue form heading to inspect for Yes/No value
+        required: false
+        default: Assign to current iteration?
+        type: string
+      label_name:
+        description: Label to add when question answer is Yes
+        required: false
+        default: assign-current-iteration
+        type: string
+
+jobs:
+  apply_label_from_form:
+    name: Apply conditional label from issue form answer
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Read issue and evaluate form response
+        id: evaluate
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = '${{ inputs.owner }}';
+            const repo = '${{ inputs.repo }}';
+            const issue_number = Number('${{ inputs.issue_number }}');
+            const heading = '${{ inputs.question_heading }}';
+            const labelToApply = '${{ inputs.label_name }}';
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number
+            });
+
+            const issueBody = issue.body || '';
+            const existingLabels = (issue.labels || []).map(label =>
+              typeof label === 'string' ? label : label.name
+            );
+
+            const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const responseMatch = issueBody.match(new RegExp(`###\\s*${escapedHeading}\\s*\\n+([^\\n]+)`, 'i'));
+            const responseValue = (responseMatch?.[1] || '').trim().toLowerCase();
+            const shouldApplyLabel = responseValue === 'yes' && !existingLabels.includes(labelToApply);
+
+            core.setOutput('response_value', responseValue || 'not-found');
+            core.setOutput('should_apply_label', shouldApplyLabel ? 'true' : 'false');
+            core.setOutput('existing_labels_json', JSON.stringify(existingLabels));
+
+      - name: Apply label
+        if: ${{ steps.evaluate.outputs.should_apply_label == 'true' }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = '${{ inputs.owner }}';
+            const repo = '${{ inputs.repo }}';
+            const issue_number = Number('${{ inputs.issue_number }}');
+            const labelToApply = '${{ inputs.label_name }}';
+            const existingLabels = JSON.parse('${{ steps.evaluate.outputs.existing_labels_json }}');
+
+            const mergedLabels = [...new Set([...existingLabels, labelToApply])];
+
+            await github.rest.issues.update({
+              owner,
+              repo,
+              issue_number,
+              labels: mergedLabels
+            });
+
+# Example per-repo caller workflow:
+#
+# name: Apply issue-form iteration label
+#
+# on:
+#   issues:
+#     types: [opened, edited]
+#
+# jobs:
+#   call-reusable-worker:
+#     if: ${{ github.event.issue.state == 'open' }}
+#     uses: iOPSPro/.github/.github/workflows/apply-issue-form-iteration-label.yml@main
+#     with:
+#       owner: ${{ github.repository_owner }}
+#       repo: ${{ github.event.repository.name }}
+#       issue_number: ${{ github.event.issue.number }}
+#     secrets: inherit

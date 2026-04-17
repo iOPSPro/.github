@@ -17,6 +17,18 @@ body:
         Issues created from this form automatically receive the `needs-testing` label.
         Future automation will use that label to create a related testing child issue.
 
+  - type: dropdown
+    id: assign_current_iteration
+    attributes:
+      label: Assign to current iteration?
+      description: Select "Yes" to signal automation to add the `assign-current-iteration` label after issue creation.
+      options:
+        - "No"
+        - "Yes"
+      default: 0
+    validations:
+      required: true
+
   - type: textarea
     id: objective
     attributes:
