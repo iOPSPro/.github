@@ -66,10 +66,20 @@ jobs:
 
             const issueBody = issue.body || '';
             const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            // Pattern: "### {heading}", optional line breaks/whitespace, then capture first response line.
-            const responsePattern = new RegExp(`###\\s*${escapedHeading}\\s*(?:[\\r\\n]+\\s*)*([^\\r\\n]+)`, 'i');
-            const responseMatch = issueBody.match(responsePattern);
-            const responseValue = (responseMatch?.[1] || '').trim().toLowerCase();
+            const headingPattern = new RegExp(`^###\\s*${escapedHeading}\\s*$`, 'i');
+            const lines = issueBody.split(/\r?\n/);
+
+            let responseValue = '';
+            for (let i = 0; i < lines.length; i += 1) {
+              if (!headingPattern.test(lines[i].trim())) continue;
+              for (let j = i + 1; j < lines.length; j += 1) {
+                const candidate = lines[j].trim();
+                if (!candidate) continue;
+                responseValue = candidate.toLowerCase();
+                break;
+              }
+              break;
+            }
             const shouldApplyLabel = responseValue === positiveResponse;
 
             core.setOutput('response_value', responseValue || 'not-found');
