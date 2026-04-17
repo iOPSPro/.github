@@ -65,20 +65,15 @@ jobs:
             });
 
             const issueBody = issue.body || '';
-            const existingLabels = (issue.labels || []).map(label =>
-              typeof label === 'string' ? label : label.name
-            );
-
             const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            // Pattern: "### {heading}", then one-or-more line breaks/whitespace, then capture first response line.
-            const responsePattern = new RegExp(`###\\s*${escapedHeading}\\s*(?:[\\r\\n]+\\s*)+([^\\r\\n]+)`, 'i');
+            // Pattern: "### {heading}", optional line breaks/whitespace, then capture first response line.
+            const responsePattern = new RegExp(`###\\s*${escapedHeading}\\s*(?:[\\r\\n]+\\s*)*([^\\r\\n]+)`, 'i');
             const responseMatch = issueBody.match(responsePattern);
             const responseValue = (responseMatch?.[1] || '').trim().toLowerCase();
             const shouldApplyLabel = responseValue === positiveResponse;
 
             core.setOutput('response_value', responseValue || 'not-found');
             core.setOutput('should_apply_label', shouldApplyLabel ? 'true' : 'false');
-            core.setOutput('existing_labels_json', JSON.stringify(existingLabels));
 
       - name: Apply label
         if: ${{ steps.evaluate.outputs.should_apply_label == 'true' }}
@@ -88,23 +83,18 @@ jobs:
           INPUT_REPO: ${{ inputs.repo }}
           INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
           INPUT_LABEL_NAME: ${{ inputs.label_name }}
-          EXISTING_LABELS_JSON: ${{ steps.evaluate.outputs.existing_labels_json }}
         with:
           script: |
             const owner = process.env.INPUT_OWNER;
             const repo = process.env.INPUT_REPO;
             const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
             const labelToApply = process.env.INPUT_LABEL_NAME;
-            const existingLabels = JSON.parse(process.env.EXISTING_LABELS_JSON || '[]');
 
-            // Keep deduping defensively in case the issue labels change between evaluate and update.
-            const mergedLabels = [...new Set([...existingLabels, labelToApply])];
-
-            await github.rest.issues.update({
+            await github.rest.issues.addLabels({
               owner,
               repo,
               issue_number,
-              labels: mergedLabels
+              labels: [labelToApply]
             });
 
 # Example per-repo caller workflow:
