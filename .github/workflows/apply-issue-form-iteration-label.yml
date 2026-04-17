@@ -88,7 +88,7 @@ jobs:
             const labelToApply = process.env.INPUT_LABEL_NAME;
             const existingLabels = JSON.parse(process.env.EXISTING_LABELS_JSON || '[]');
 
-            const mergedLabels = [...new Set([...existingLabels, labelToApply])];
+            const mergedLabels = [...existingLabels, labelToApply];
 
             await github.rest.issues.update({
               owner,
