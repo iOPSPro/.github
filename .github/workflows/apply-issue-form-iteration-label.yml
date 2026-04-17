@@ -25,6 +25,11 @@ on:
         required: false
         default: assign-current-iteration
         type: string
+      positive_response:
+        description: Normalized response value that should trigger label application
+        required: false
+        default: yes
+        type: string
 
 jobs:
   apply_label_from_form:
@@ -43,6 +48,7 @@ jobs:
           INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
           INPUT_QUESTION_HEADING: ${{ inputs.question_heading }}
           INPUT_LABEL_NAME: ${{ inputs.label_name }}
+          INPUT_POSITIVE_RESPONSE: ${{ inputs.positive_response }}
         with:
           script: |
             const owner = process.env.INPUT_OWNER;
@@ -50,6 +56,7 @@ jobs:
             const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
             const heading = process.env.INPUT_QUESTION_HEADING;
             const labelToApply = process.env.INPUT_LABEL_NAME;
+            const positiveResponse = (process.env.INPUT_POSITIVE_RESPONSE || 'yes').trim().toLowerCase();
 
             const { data: issue } = await github.rest.issues.get({
               owner,
@@ -63,10 +70,11 @@ jobs:
             );
 
             const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            // GitHub issue forms currently render each question as an H3 heading in markdown.
-            const responseMatch = issueBody.match(new RegExp(`###\\s*${escapedHeading}\\s*(?:[\\r\\n]+\\s*)+([^\\r\\n]+)`, 'i'));
+            // Pattern: "### {heading}", then one-or-more line breaks/whitespace, then capture first response line.
+            const responsePattern = new RegExp(`###\\s*${escapedHeading}\\s*(?:[\\r\\n]+\\s*)+([^\\r\\n]+)`, 'i');
+            const responseMatch = issueBody.match(responsePattern);
             const responseValue = (responseMatch?.[1] || '').trim().toLowerCase();
-            const shouldApplyLabel = responseValue === 'yes';
+            const shouldApplyLabel = responseValue === positiveResponse;
 
             core.setOutput('response_value', responseValue || 'not-found');
             core.setOutput('should_apply_label', shouldApplyLabel ? 'true' : 'false');
