@@ -34,8 +34,8 @@ jobs:
       contents: read
 
     steps:
-      - name: Check whether testing child already exists
-        id: check_existing
+      - name: Read parent issue metadata
+        id: parent
         uses: actions/github-script@v8
         with:
           script: |
@@ -53,11 +53,15 @@ jobs:
               typeof label === 'string' ? label : label.name
             );
 
+            const assignees = (issue.assignees || []).map(assignee => assignee.login);
             const alreadyCreated = labels.includes('testing-created');
+
             core.setOutput('already_created', alreadyCreated ? 'true' : 'false');
+            core.setOutput('parent_labels_json', JSON.stringify(labels));
+            core.setOutput('parent_assignees_json', JSON.stringify(assignees));
 
       - name: Create testing child issue
-        if: ${{ steps.check_existing.outputs.already_created != 'true' }}
+        if: ${{ steps.parent.outputs.already_created != 'true' }}
         id: create_child
         uses: actions/github-script@v8
         with:
@@ -66,6 +70,7 @@ jobs:
             const repo = '${{ inputs.repo }}';
             const parentIssueNumber = Number('${{ inputs.issue_number }}');
             const parentTitle = '${{ inputs.parent_title }}';
+            const parentAssignees = JSON.parse('${{ steps.parent.outputs.parent_assignees_json }}');
 
             const childTitle = `Testing: ${parentTitle}`;
             const childBody = [
@@ -79,19 +84,25 @@ jobs:
               `- [ ] Capture screenshots / notes as needed`
             ].join('\n');
 
-            const created = await github.rest.issues.create({
+            const payload = {
               owner,
               repo,
               title: childTitle,
               body: childBody,
               labels: ['testing']
-            });
+            };
+
+            if (parentAssignees.length > 0) {
+              payload.assignees = parentAssignees;
+            }
+
+            const created = await github.rest.issues.create(payload);
 
             core.setOutput('child_issue_number', String(created.data.number));
             core.setOutput('child_issue_id', String(created.data.id));
 
       - name: Attach testing child as sub-issue
-        if: ${{ steps.check_existing.outputs.already_created != 'true' }}
+        if: ${{ steps.parent.outputs.already_created != 'true' }}
         uses: actions/github-script@v8
         with:
           script: |
@@ -108,25 +119,16 @@ jobs:
             });
 
       - name: Add testing-created label to parent
-        if: ${{ steps.check_existing.outputs.already_created != 'true' }}
+        if: ${{ steps.parent.outputs.already_created != 'true' }}
         uses: actions/github-script@v8
         with:
           script: |
             const owner = '${{ inputs.owner }}';
             const repo = '${{ inputs.repo }}';
             const issue_number = Number('${{ inputs.issue_number }}');
+            const existingLabels = JSON.parse('${{ steps.parent.outputs.parent_labels_json }}');
 
-            const { data: issue } = await github.rest.issues.get({
-              owner,
-              repo,
-              issue_number
-            });
-
-            const labels = issue.labels.map(label =>
-              typeof label === 'string' ? label : label.name
-            );
-
-            const mergedLabels = [...new Set([...labels, 'testing-created'])];
+            const mergedLabels = [...new Set([...existingLabels, 'testing-created'])];
 
             await github.rest.issues.update({
               owner,
@@ -136,7 +138,7 @@ jobs:
             });
 
       - name: Comment on parent issue
-        if: ${{ steps.check_existing.outputs.already_created != 'true' }}
+        if: ${{ steps.parent.outputs.already_created != 'true' }}
         uses: actions/github-script@v8
         with:
           script: |
