@@ -37,13 +37,19 @@ jobs:
       - name: Read issue and evaluate form response
         id: evaluate
         uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_QUESTION_HEADING: ${{ inputs.question_heading }}
+          INPUT_LABEL_NAME: ${{ inputs.label_name }}
         with:
           script: |
-            const owner = '${{ inputs.owner }}';
-            const repo = '${{ inputs.repo }}';
-            const issue_number = Number('${{ inputs.issue_number }}');
-            const heading = '${{ inputs.question_heading }}';
-            const labelToApply = '${{ inputs.label_name }}';
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
+            const heading = process.env.INPUT_QUESTION_HEADING;
+            const labelToApply = process.env.INPUT_LABEL_NAME;
 
             const { data: issue } = await github.rest.issues.get({
               owner,
@@ -57,7 +63,7 @@ jobs:
             );
 
             const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const responseMatch = issueBody.match(new RegExp(`###\\s*${escapedHeading}\\s*\\n+([^\\n]+)`, 'i'));
+            const responseMatch = issueBody.match(new RegExp(`###\\s*${escapedHeading}\\s*[\\r\\n]+([^\\r\\n]+)`, 'i'));
             const responseValue = (responseMatch?.[1] || '').trim().toLowerCase();
             const shouldApplyLabel = responseValue === 'yes' && !existingLabels.includes(labelToApply);
 
@@ -68,13 +74,19 @@ jobs:
       - name: Apply label
         if: ${{ steps.evaluate.outputs.should_apply_label == 'true' }}
         uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_LABEL_NAME: ${{ inputs.label_name }}
+          EXISTING_LABELS_JSON: ${{ steps.evaluate.outputs.existing_labels_json }}
         with:
           script: |
-            const owner = '${{ inputs.owner }}';
-            const repo = '${{ inputs.repo }}';
-            const issue_number = Number('${{ inputs.issue_number }}');
-            const labelToApply = '${{ inputs.label_name }}';
-            const existingLabels = JSON.parse('${{ steps.evaluate.outputs.existing_labels_json }}');
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
+            const labelToApply = process.env.INPUT_LABEL_NAME;
+            const existingLabels = JSON.parse(process.env.EXISTING_LABELS_JSON || '[]');
 
             const mergedLabels = [...new Set([...existingLabels, labelToApply])];
 
