@@ -64,9 +64,9 @@ jobs:
 
             const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             // GitHub issue forms currently render each question as an H3 heading in markdown.
-            const responseMatch = issueBody.match(new RegExp(`###\\s*${escapedHeading}\\s*[\\r\\n]+([^\\r\\n]+)`, 'i'));
+            const responseMatch = issueBody.match(new RegExp(`###\\s*${escapedHeading}\\s*(?:[\\r\\n]+\\s*)+([^\\r\\n]+)`, 'i'));
             const responseValue = (responseMatch?.[1] || '').trim().toLowerCase();
-            const shouldApplyLabel = responseValue === 'yes' && !existingLabels.includes(labelToApply);
+            const shouldApplyLabel = responseValue === 'yes';
 
             core.setOutput('response_value', responseValue || 'not-found');
             core.setOutput('should_apply_label', shouldApplyLabel ? 'true' : 'false');
