@@ -24,9 +24,14 @@ on:
         required: true
         type: number
       iteration_field_name:
-        description: Project Iteration field name
+        description: Primary Project Iteration field name
         required: false
         default: Iteration
+        type: string
+      secondary_iteration_field_name:
+        description: Secondary Project Iteration field name
+        required: false
+        default: 60 Day Block
         type: string
       label_name:
         description: Label that triggers iteration assignment (removed on success)
@@ -56,6 +61,7 @@ jobs:
           INPUT_PROJECT_OWNER: ${{ inputs.project_owner }}
           INPUT_PROJECT_NUMBER: ${{ inputs.project_number }}
           INPUT_ITERATION_FIELD_NAME: ${{ inputs.iteration_field_name }}
+          INPUT_SECONDARY_ITERATION_FIELD_NAME: ${{ inputs.secondary_iteration_field_name }}
           INPUT_LABEL_NAME: ${{ inputs.label_name }}
         with:
           github-token: ${{ secrets.project_token }}
@@ -65,7 +71,8 @@ jobs:
             const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
             const projectOwner = process.env.INPUT_PROJECT_OWNER;
             const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER);
-            const iterationFieldName = (process.env.INPUT_ITERATION_FIELD_NAME || 'Iteration').trim();
+            const primaryIterationFieldName = (process.env.INPUT_ITERATION_FIELD_NAME || 'Iteration').trim();
+            const secondaryIterationFieldName = (process.env.INPUT_SECONDARY_ITERATION_FIELD_NAME || '60 Day Block').trim();
             const labelName = (process.env.INPUT_LABEL_NAME || 'assign-current-iteration').trim();
 
             const normalizeLabelName = (label) =>
@@ -80,6 +87,8 @@ jobs:
             });
 
             const issueLabels = (issue.labels || []).map(normalizeLabelName).filter(Boolean);
+            core.info(`Current labels on #${issue_number}: ${issueLabels.join(', ') || '(none)'}`);
+
             if (!issueLabels.includes(labelName.toLowerCase())) {
               core.info(`Label "${labelName}" not present on #${issue_number}. Skipping.`);
               return;
@@ -194,7 +203,7 @@ jobs:
                 const orgProject = orgResult?.organization?.projectV2;
                 if (orgProject) return orgProject;
               } catch (error) {
-                // ignore and try user lookup
+                // Ignore and try user lookup next.
               }
 
               const userResult = await github.graphql(queryProjectForUser, {
@@ -213,47 +222,75 @@ jobs:
             const projectTitle = firstPage.title;
 
             const iterationFields = (firstPage.fields?.nodes || []).filter(Boolean);
-            const iterationField = iterationFields.find(
-              (field) => (field.name || '').trim().toLowerCase() === iterationFieldName.toLowerCase()
-            );
-
-            if (!iterationField) {
-              const available = iterationFields.map((field) => field.name).filter(Boolean);
-              throw new Error(
-                `Iteration field "${iterationFieldName}" not found on project "${projectTitle}". Available iteration fields: ${available.join(', ')}`
-              );
-            }
+            const availableIterationFieldNames = iterationFields.map((field) => field.name).filter(Boolean);
 
             const toDateUtc = (isoDate) => new Date(`${isoDate}T00:00:00Z`);
             const addDaysUtc = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
             const todayDate = toDateUtc(todayIso);
 
-            const allIterations = [
-              ...(iterationField.configuration?.iterations || []),
-              ...(iterationField.configuration?.completedIterations || [])
-            ].filter(Boolean);
+            const findFieldByName = (fieldName) =>
+              iterationFields.find(
+                (field) => (field.name || '').trim().toLowerCase() === fieldName.toLowerCase()
+              );
 
-            const uniqueById = new Map(allIterations.map((iteration) => [iteration.id, iteration]));
-            const iterations = [...uniqueById.values()].sort((a, b) =>
-              String(a.startDate).localeCompare(String(b.startDate))
-            );
+            const findCurrentIterationForField = (field, fieldName) => {
+              const allIterations = [
+                ...(field.configuration?.iterations || []),
+                ...(field.configuration?.completedIterations || [])
+              ].filter(Boolean);
 
-            if (iterations.length === 0) {
-              throw new Error(`No iterations found in field "${iterationFieldName}" on project "${projectTitle}".`);
+              const uniqueById = new Map(allIterations.map((iteration) => [iteration.id, iteration]));
+              const iterations = [...uniqueById.values()].sort((a, b) =>
+                String(a.startDate).localeCompare(String(b.startDate))
+              );
+
+              if (iterations.length === 0) {
+                throw new Error(`No iterations found in field "${fieldName}" on project "${projectTitle}".`);
+              }
+
+              const currentIteration = iterations.find((iteration) => {
+                if (!iteration.startDate || !iteration.duration) return false;
+                const start = toDateUtc(iteration.startDate);
+                const end = addDaysUtc(start, iteration.duration);
+                return todayDate >= start && todayDate < end;
+              });
+
+              if (!currentIteration) {
+                const oldest = iterations[0];
+                const newest = iterations[iterations.length - 1];
+                throw new Error(
+                  `No current iteration matched for field "${fieldName}" on ${todayIso}. Iterations range from ${oldest.startDate} to ${newest.startDate}.`
+                );
+              }
+
+              return currentIteration;
+            };
+
+            const fieldsToSync = [];
+
+            const primaryField = findFieldByName(primaryIterationFieldName);
+            if (!primaryField) {
+              throw new Error(
+                `Iteration field "${primaryIterationFieldName}" not found on project "${projectTitle}". Available iteration fields: ${availableIterationFieldNames.join(', ')}`
+              );
             }
 
-            const currentIteration = iterations.find((iteration) => {
-              if (!iteration.startDate || !iteration.duration) return false;
-              const start = toDateUtc(iteration.startDate);
-              const end = addDaysUtc(start, iteration.duration);
-              return todayDate >= start && todayDate < end;
+            fieldsToSync.push({
+              fieldName: primaryIterationFieldName,
+              fieldId: primaryField.id,
+              iteration: findCurrentIterationForField(primaryField, primaryIterationFieldName)
             });
 
-            if (!currentIteration) {
-              const oldest = iterations[0];
-              const newest = iterations[iterations.length - 1];
-              throw new Error(
-                `No current iteration matched for ${todayIso}. Iterations range from ${oldest.startDate} to ${newest.startDate}.`
+            const secondaryField = findFieldByName(secondaryIterationFieldName);
+            if (secondaryField) {
+              fieldsToSync.push({
+                fieldName: secondaryIterationFieldName,
+                fieldId: secondaryField.id,
+                iteration: findCurrentIterationForField(secondaryField, secondaryIterationFieldName)
+              });
+            } else {
+              core.info(
+                `Secondary iteration field "${secondaryIterationFieldName}" not found on project "${projectTitle}". Skipping it.`
               );
             }
 
@@ -311,17 +348,23 @@ jobs:
               }
             `;
 
-            await github.graphql(updateIterationMutation, {
-              projectId,
-              itemId,
-              fieldId: iterationField.id,
-              iterationId: currentIteration.id
-            });
+            for (const fieldToSync of fieldsToSync) {
+              await github.graphql(updateIterationMutation, {
+                projectId,
+                itemId,
+                fieldId: fieldToSync.fieldId,
+                iterationId: fieldToSync.iteration.id
+              });
+
+              core.info(
+                `Set field "${fieldToSync.fieldName}" to "${fieldToSync.iteration.title}" for #${issue_number}.`
+              );
+            }
 
             core.setOutput('project_title', projectTitle);
-            core.setOutput('iteration_title', currentIteration.title);
-            core.setOutput('iteration_start_date', currentIteration.startDate);
-            core.setOutput('iteration_duration_days', String(currentIteration.duration));
+            core.setOutput('iteration_title', fieldsToSync[0].iteration.title);
+            core.setOutput('iteration_start_date', fieldsToSync[0].iteration.startDate);
+            core.setOutput('iteration_duration_days', String(fieldsToSync[0].iteration.duration));
 
             try {
               await github.rest.issues.removeLabel({
@@ -339,7 +382,7 @@ jobs:
             }
 
             core.info(
-              `Set project "${projectTitle}" iteration to "${currentIteration.title}" for #${issue_number} and removed "${labelName}".`
+              `Set ${fieldsToSync.length} iteration field(s) on project "${projectTitle}" for #${issue_number} and removed "${labelName}".`
             );
 
 # Example per-repo caller workflow:
