@@ -1,3 +1,5 @@
+Ok. Here is the .github/workflows/create-testing-subissue.yml
+
 name: Create testing sub-issue (reusable)
 
 on:
@@ -173,3 +175,23 @@ jobs:
 #       parent_title: ${{ github.event.issue.title }}
 #       has_needs_testing: ${{ contains(github.event.issue.labels.*.name, 'needs-testing') }}
 #     secrets: inherit
+
+and here is the iops-planning.github/workflows/spawn-testing-issue.yml
+
+name: Spawn testing issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  call-reusable-worker:
+    if: ${{ github.event.issue.state == 'open' && contains(github.event.issue.labels.*.name, 'needs-testing') }}
+    uses: iOPSPro/.github/.github/workflows/create-testing-subissue.yml@main
+    with:
+      owner: ${{ github.repository_owner }}
+      repo: ${{ github.event.repository.name }}
+      issue_number: ${{ github.event.issue.number }}
+      parent_title: ${{ github.event.issue.title }}
+      has_needs_testing: ${{ contains(github.event.issue.labels.*.name, 'needs-testing') }}
+    secrets: inherit
