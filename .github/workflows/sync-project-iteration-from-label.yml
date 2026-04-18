@@ -1,0 +1,311 @@
+name: Sync project iteration from label (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        description: Organization or user that owns the repository containing the issue
+        required: true
+        type: string
+      repo:
+        description: Repository name containing the issue
+        required: true
+        type: string
+      issue_number:
+        description: Issue number to update
+        required: true
+        type: number
+      project_owner:
+        description: Organization or user that owns the Project V2
+        required: true
+        type: string
+      project_number:
+        description: Project V2 number (e.g., 5 for iOPSPro/5)
+        required: true
+        type: number
+      iteration_field_name:
+        description: Project Iteration field name
+        required: false
+        default: Iteration
+        type: string
+      label_name:
+        description: Label that triggers iteration assignment (removed on success)
+        required: false
+        default: assign-current-iteration
+        type: string
+    secrets:
+      project_token:
+        description: Token with access to read/write Project V2 fields and remove labels
+        required: true
+
+jobs:
+  sync_iteration:
+    name: Set Project Iteration from label
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Set iteration and remove label
+        uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_PROJECT_OWNER: ${{ inputs.project_owner }}
+          INPUT_PROJECT_NUMBER: ${{ inputs.project_number }}
+          INPUT_ITERATION_FIELD_NAME: ${{ inputs.iteration_field_name }}
+          INPUT_LABEL_NAME: ${{ inputs.label_name }}
+        with:
+          github-token: ${{ secrets.project_token }}
+          script: |
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
+            const projectOwner = process.env.INPUT_PROJECT_OWNER;
+            const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER);
+            const iterationFieldName = (process.env.INPUT_ITERATION_FIELD_NAME || 'Iteration').trim();
+            const labelName = (process.env.INPUT_LABEL_NAME || 'assign-current-iteration').trim();
+
+            const normalizeLabelName = (label) =>
+              (typeof label === 'string' ? label : label?.name || '').trim().toLowerCase();
+
+            const todayIso = new Date().toISOString().slice(0, 10);
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number
+            });
+
+            const issueLabels = (issue.labels || []).map(normalizeLabelName).filter(Boolean);
+            if (!issueLabels.includes(labelName.toLowerCase())) {
+              core.info(`Label "${labelName}" not present on #${issue_number}. Skipping.`);
+              return;
+            }
+
+            const issueNodeId = issue.node_id;
+            if (!issueNodeId) {
+              throw new Error(`Issue #${issue_number} has no node_id; cannot use Projects V2 GraphQL mutations.`);
+            }
+
+            const queryProjectForOrg = `
+              query($login: String!, $number: Int!) {
+                organization(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        ... on ProjectV2IterationField {
+                          id
+                          name
+                          configuration {
+                            iterations {
+                              id
+                              title
+                              startDate
+                              duration
+                            }
+                            completedIterations {
+                              id
+                              title
+                              startDate
+                              duration
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const queryProjectForUser = `
+              query($login: String!, $number: Int!) {
+                user(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        ... on ProjectV2IterationField {
+                          id
+                          name
+                          configuration {
+                            iterations {
+                              id
+                              title
+                              startDate
+                              duration
+                            }
+                            completedIterations {
+                              id
+                              title
+                              startDate
+                              duration
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const getProject = async () => {
+              const orgResult = await github.graphql(queryProjectForOrg, {
+                login: projectOwner,
+                number: projectNumber
+              });
+              const orgProject = orgResult?.organization?.projectV2;
+              if (orgProject) return orgProject;
+
+              const userResult = await github.graphql(queryProjectForUser, {
+                login: projectOwner,
+                number: projectNumber
+              });
+              const userProject = userResult?.user?.projectV2;
+              if (userProject) return userProject;
+
+              throw new Error(`Project not found: ${projectOwner}/${projectNumber}`);
+            };
+
+            const project = await getProject();
+            const projectId = project.id;
+
+            const iterationFields = (project.fields?.nodes || []).filter(Boolean);
+            const iterationField = iterationFields.find(
+              (field) => (field.name || '').trim().toLowerCase() === iterationFieldName.toLowerCase()
+            );
+
+            if (!iterationField) {
+              const available = iterationFields.map((field) => field.name).filter(Boolean);
+              throw new Error(
+                `Iteration field "${iterationFieldName}" not found on project "${project.title}". Available iteration fields: ${available.join(', ')}`
+              );
+            }
+
+            const toDateUtc = (isoDate) => new Date(`${isoDate}T00:00:00Z`);
+            const addDaysUtc = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+            const todayDate = toDateUtc(todayIso);
+
+            const allIterations = [
+              ...(iterationField.configuration?.iterations || []),
+              ...(iterationField.configuration?.completedIterations || [])
+            ].filter(Boolean);
+
+            const uniqueById = new Map(allIterations.map((iteration) => [iteration.id, iteration]));
+            const iterations = [...uniqueById.values()].sort((a, b) =>
+              String(a.startDate).localeCompare(String(b.startDate))
+            );
+
+            if (iterations.length === 0) {
+              throw new Error(`No iterations found in field "${iterationFieldName}" on project "${project.title}".`);
+            }
+
+            const currentIteration = iterations.find((iteration) => {
+              if (!iteration.startDate || !iteration.duration) return false;
+              const start = toDateUtc(iteration.startDate);
+              const end = addDaysUtc(start, iteration.duration);
+              return todayDate >= start && todayDate < end;
+            });
+
+            if (!currentIteration) {
+              const oldest = iterations[0];
+              const newest = iterations[iterations.length - 1];
+              throw new Error(
+                `No current iteration matched for ${todayIso}. Iterations range from ${oldest.startDate} to ${newest.startDate}.`
+              );
+            }
+
+            const addToProjectMutation = `
+              mutation($projectId: ID!, $contentId: ID!) {
+                addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                  item {
+                    id
+                  }
+                }
+              }
+            `;
+
+            const addResult = await github.graphql(addToProjectMutation, {
+              projectId,
+              contentId: issueNodeId
+            });
+
+            const itemId = addResult?.addProjectV2ItemById?.item?.id;
+            if (!itemId) {
+              throw new Error(`Failed to locate or create Project item for issue #${issue_number} in ${projectOwner}/${projectNumber}.`);
+            }
+
+            const updateIterationMutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $iterationId: String!) {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { iterationId: $iterationId }
+                  }
+                ) {
+                  projectV2Item {
+                    id
+                  }
+                }
+              }
+            `;
+
+            await github.graphql(updateIterationMutation, {
+              projectId,
+              itemId,
+              fieldId: iterationField.id,
+              iterationId: currentIteration.id
+            });
+
+            core.setOutput('project_title', project.title);
+            core.setOutput('iteration_title', currentIteration.title);
+            core.setOutput('iteration_start_date', currentIteration.startDate);
+            core.setOutput('iteration_duration_days', String(currentIteration.duration));
+
+            try {
+              await github.rest.issues.removeLabel({
+                owner,
+                repo,
+                issue_number,
+                name: labelName
+              });
+            } catch (error) {
+              if (error?.status === 404) {
+                core.info(`Label "${labelName}" was already removed from #${issue_number}.`);
+              } else {
+                throw error;
+              }
+            }
+
+            core.info(
+              `Set project "${project.title}" iteration to "${currentIteration.title}" for #${issue_number} and removed "${labelName}".`
+            );
+
+# Example per-repo caller workflow:
+#
+# name: Sync iteration from label
+#
+# on:
+#   issues:
+#     types: [labeled]
+#
+# jobs:
+#   call-reusable-worker:
+#     if: ${{ github.event.issue.state == 'open' && github.event.label.name == 'assign-current-iteration' }}
+#     uses: iOPSPro/.github/.github/workflows/sync-project-iteration-from-label.yml@main
+#     with:
+#       owner: ${{ github.repository_owner }}
+#       repo: ${{ github.event.repository.name }}
+#       issue_number: ${{ github.event.issue.number }}
+#       project_owner: iOPSPro
+#       project_number: 5
+#     secrets:
+#       project_token: ${{ secrets.PROJECT_TOKEN }}
