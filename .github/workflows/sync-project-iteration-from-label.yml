@@ -45,6 +45,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+
     steps:
       - name: Set iteration and remove label
         uses: actions/github-script@v8
@@ -90,7 +91,7 @@ jobs:
             }
 
             const queryProjectForOrg = `
-              query($login: String!, $number: Int!) {
+              query($login: String!, $number: Int!, $cursor: String) {
                 organization(login: $login) {
                   projectV2(number: $number) {
                     id
@@ -117,13 +118,27 @@ jobs:
                         }
                       }
                     }
+                    items(first: 100, after: $cursor) {
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
+                      nodes {
+                        id
+                        content {
+                          ... on Issue {
+                            id
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
             `;
 
             const queryProjectForUser = `
-              query($login: String!, $number: Int!) {
+              query($login: String!, $number: Int!, $cursor: String) {
                 user(login: $login) {
                   projectV2(number: $number) {
                     id
@@ -150,22 +165,42 @@ jobs:
                         }
                       }
                     }
+                    items(first: 100, after: $cursor) {
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
+                      nodes {
+                        id
+                        content {
+                          ... on Issue {
+                            id
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
             `;
 
-            const getProject = async () => {
-              const orgResult = await github.graphql(queryProjectForOrg, {
-                login: projectOwner,
-                number: projectNumber
-              });
-              const orgProject = orgResult?.organization?.projectV2;
-              if (orgProject) return orgProject;
+            const getProjectPage = async (cursor = null) => {
+              try {
+                const orgResult = await github.graphql(queryProjectForOrg, {
+                  login: projectOwner,
+                  number: projectNumber,
+                  cursor
+                });
+                const orgProject = orgResult?.organization?.projectV2;
+                if (orgProject) return orgProject;
+              } catch (error) {
+                // ignore and try user lookup
+              }
 
               const userResult = await github.graphql(queryProjectForUser, {
                 login: projectOwner,
-                number: projectNumber
+                number: projectNumber,
+                cursor
               });
               const userProject = userResult?.user?.projectV2;
               if (userProject) return userProject;
@@ -173,10 +208,11 @@ jobs:
               throw new Error(`Project not found: ${projectOwner}/${projectNumber}`);
             };
 
-            const project = await getProject();
-            const projectId = project.id;
+            const firstPage = await getProjectPage(null);
+            const projectId = firstPage.id;
+            const projectTitle = firstPage.title;
 
-            const iterationFields = (project.fields?.nodes || []).filter(Boolean);
+            const iterationFields = (firstPage.fields?.nodes || []).filter(Boolean);
             const iterationField = iterationFields.find(
               (field) => (field.name || '').trim().toLowerCase() === iterationFieldName.toLowerCase()
             );
@@ -184,7 +220,7 @@ jobs:
             if (!iterationField) {
               const available = iterationFields.map((field) => field.name).filter(Boolean);
               throw new Error(
-                `Iteration field "${iterationFieldName}" not found on project "${project.title}". Available iteration fields: ${available.join(', ')}`
+                `Iteration field "${iterationFieldName}" not found on project "${projectTitle}". Available iteration fields: ${available.join(', ')}`
               );
             }
 
@@ -203,7 +239,7 @@ jobs:
             );
 
             if (iterations.length === 0) {
-              throw new Error(`No iterations found in field "${iterationFieldName}" on project "${project.title}".`);
+              throw new Error(`No iterations found in field "${iterationFieldName}" on project "${projectTitle}".`);
             }
 
             const currentIteration = iterations.find((iteration) => {
@@ -221,22 +257,39 @@ jobs:
               );
             }
 
-            const addToProjectMutation = `
-              mutation($projectId: ID!, $contentId: ID!) {
-                addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
-                  item {
-                    id
+            let itemId =
+              (firstPage.items?.nodes || []).find((item) => item?.content?.id === issueNodeId)?.id || null;
+
+            let hasNextPage = firstPage.items?.pageInfo?.hasNextPage || false;
+            let cursor = firstPage.items?.pageInfo?.endCursor || null;
+
+            while (!itemId && hasNextPage) {
+              const nextPage = await getProjectPage(cursor);
+              itemId =
+                (nextPage.items?.nodes || []).find((item) => item?.content?.id === issueNodeId)?.id || null;
+              hasNextPage = nextPage.items?.pageInfo?.hasNextPage || false;
+              cursor = nextPage.items?.pageInfo?.endCursor || null;
+            }
+
+            if (!itemId) {
+              const addToProjectMutation = `
+                mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                    item {
+                      id
+                    }
                   }
                 }
-              }
-            `;
+              `;
 
-            const addResult = await github.graphql(addToProjectMutation, {
-              projectId,
-              contentId: issueNodeId
-            });
+              const addResult = await github.graphql(addToProjectMutation, {
+                projectId,
+                contentId: issueNodeId
+              });
 
-            const itemId = addResult?.addProjectV2ItemById?.item?.id;
+              itemId = addResult?.addProjectV2ItemById?.item?.id || null;
+            }
+
             if (!itemId) {
               throw new Error(`Failed to locate or create Project item for issue #${issue_number} in ${projectOwner}/${projectNumber}.`);
             }
@@ -265,7 +318,7 @@ jobs:
               iterationId: currentIteration.id
             });
 
-            core.setOutput('project_title', project.title);
+            core.setOutput('project_title', projectTitle);
             core.setOutput('iteration_title', currentIteration.title);
             core.setOutput('iteration_start_date', currentIteration.startDate);
             core.setOutput('iteration_duration_days', String(currentIteration.duration));
@@ -286,7 +339,7 @@ jobs:
             }
 
             core.info(
-              `Set project "${project.title}" iteration to "${currentIteration.title}" for #${issue_number} and removed "${labelName}".`
+              `Set project "${projectTitle}" iteration to "${currentIteration.title}" for #${issue_number} and removed "${labelName}".`
             );
 
 # Example per-repo caller workflow:
