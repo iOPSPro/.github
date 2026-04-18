@@ -61,11 +61,15 @@ jobs:
       - name: Read parent issue metadata
         id: parent
         uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
         with:
           script: |
-            const owner = '${{ inputs.owner }}';
-            const repo = '${{ inputs.repo }}';
-            const issue_number = Number('${{ inputs.issue_number }}');
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
 
             const { data: issue } = await github.rest.issues.get({
               owner,
@@ -89,13 +93,19 @@ jobs:
         if: ${{ steps.parent.outputs.already_created != 'true' }}
         id: create_child
         uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_PARENT_TITLE: ${{ inputs.parent_title }}
+          INPUT_PARENT_ASSIGNEES_JSON: ${{ steps.parent.outputs.parent_assignees_json }}
         with:
           script: |
-            const owner = '${{ inputs.owner }}';
-            const repo = '${{ inputs.repo }}';
-            const parentIssueNumber = Number('${{ inputs.issue_number }}');
-            const parentTitle = '${{ inputs.parent_title }}';
-            const parentAssignees = JSON.parse('${{ steps.parent.outputs.parent_assignees_json }}');
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const parentIssueNumber = Number(process.env.INPUT_ISSUE_NUMBER);
+            const parentTitle = process.env.INPUT_PARENT_TITLE;
+            const parentAssignees = JSON.parse(process.env.INPUT_PARENT_ASSIGNEES_JSON || '[]');
 
             const childTitle = `Testing: ${parentTitle}`;
             const childBody = [
@@ -130,12 +140,17 @@ jobs:
       - name: Attach testing child as sub-issue
         if: ${{ steps.parent.outputs.already_created != 'true' }}
         uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_CHILD_ISSUE_ID: ${{ steps.create_child.outputs.child_issue_id }}
         with:
           script: |
-            const owner = '${{ inputs.owner }}';
-            const repo = '${{ inputs.repo }}';
-            const parentIssueNumber = Number('${{ inputs.issue_number }}');
-            const childIssueId = Number('${{ steps.create_child.outputs.child_issue_id }}');
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const parentIssueNumber = Number(process.env.INPUT_ISSUE_NUMBER);
+            const childIssueId = Number(process.env.INPUT_CHILD_ISSUE_ID);
 
             await github.request('POST /repos/{owner}/{repo}/issues/{issue_number}/sub_issues', {
               owner,
@@ -408,12 +423,17 @@ jobs:
       - name: Add testing-created label to parent
         if: ${{ steps.parent.outputs.already_created != 'true' }}
         uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_PARENT_LABELS_JSON: ${{ steps.parent.outputs.parent_labels_json }}
         with:
           script: |
-            const owner = '${{ inputs.owner }}';
-            const repo = '${{ inputs.repo }}';
-            const issue_number = Number('${{ inputs.issue_number }}');
-            const existingLabels = JSON.parse('${{ steps.parent.outputs.parent_labels_json }}');
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
+            const existingLabels = JSON.parse(process.env.INPUT_PARENT_LABELS_JSON || '[]');
 
             const mergedLabels = [...new Set([...existingLabels, 'testing-created'])];
 
@@ -427,12 +447,17 @@ jobs:
       - name: Comment on parent issue
         if: ${{ steps.parent.outputs.already_created != 'true' }}
         uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_CHILD_ISSUE_NUMBER: ${{ steps.create_child.outputs.child_issue_number }}
         with:
           script: |
-            const owner = '${{ inputs.owner }}';
-            const repo = '${{ inputs.repo }}';
-            const issue_number = Number('${{ inputs.issue_number }}');
-            const childIssueNumber = '${{ steps.create_child.outputs.child_issue_number }}';
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
+            const childIssueNumber = process.env.INPUT_CHILD_ISSUE_NUMBER;
 
             await github.rest.issues.createComment({
               owner,
