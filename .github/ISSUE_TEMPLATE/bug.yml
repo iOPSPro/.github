@@ -17,6 +17,18 @@ body:
         **Please do not include secrets** (passwords, tokens, private keys) in this report. If you need to share logs, redact sensitive data.
 
   - type: dropdown
+    id: assign_current_iteration
+    attributes:
+      label: Assign to current iteration?
+      description: Select "Yes" to signal automation to add the `assign-current-iteration` label after issue creation.
+      options:
+        - "No"
+        - "Yes"
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
     id: severity
     attributes:
       label: Severity

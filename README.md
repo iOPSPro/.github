@@ -57,6 +57,16 @@ Important limitations and expectations:
 - Reusable workflow scaffold: `.github/workflows/create-testing-subissue.yml`.
 - GitHub Issue Forms cannot conditionally apply labels based on dropdown answers. The forms collect testing intent and instruct the author to add `needs-testing` when appropriate.
 
+## Conditional iteration label model (automation)
+
+To support project iteration assignment flows based on issue form answers:
+
+- Issue forms include a required dropdown: `Assign to current iteration?`
+- If the response is `Yes`, automation can add label: `assign-current-iteration`
+- Reusable workflow scaffold: `.github/workflows/apply-issue-form-iteration-label.yml`
+
+This provides a stable signal that downstream workflows can use to assign project fields (for example, current iteration) after issue creation.
+
 ## Notes
 
 - Repository-specific templates and files take precedence over the defaults stored here.

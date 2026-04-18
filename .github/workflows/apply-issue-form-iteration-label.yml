@@ -1,0 +1,130 @@
+name: Apply issue form iteration label (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        description: Organization or user that owns the repository containing the issue
+        required: true
+        type: string
+      repo:
+        description: Repository name containing the issue
+        required: true
+        type: string
+      issue_number:
+        description: Issue number to inspect
+        required: true
+        type: number
+      question_heading:
+        description: Issue form heading to inspect for Yes/No value
+        required: false
+        default: Assign to current iteration?
+        type: string
+      label_name:
+        description: Label to add when question answer is Yes
+        required: false
+        default: assign-current-iteration
+        type: string
+      positive_response:
+        description: Normalized response value that should trigger label application
+        required: false
+        default: yes
+        type: string
+
+jobs:
+  apply_label_from_form:
+    name: Apply conditional label from issue form answer
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Read issue and evaluate form response
+        id: evaluate
+        uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_QUESTION_HEADING: ${{ inputs.question_heading }}
+          INPUT_LABEL_NAME: ${{ inputs.label_name }}
+          INPUT_POSITIVE_RESPONSE: ${{ inputs.positive_response }}
+        with:
+          script: |
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
+            const heading = process.env.INPUT_QUESTION_HEADING;
+            const labelToApply = process.env.INPUT_LABEL_NAME;
+            const positiveResponse = (process.env.INPUT_POSITIVE_RESPONSE || 'yes').trim().toLowerCase();
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number
+            });
+
+            const issueBody = issue.body || '';
+            const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // GitHub issue forms render question labels as `###` markdown headings.
+            const headingPattern = new RegExp(`^###\\s*${escapedHeading}\\s*$`, 'i');
+            const lines = issueBody.split(/\r?\n/);
+
+            const findResponseValue = () => {
+              for (let i = 0; i < lines.length; i += 1) {
+                if (!headingPattern.test(lines[i].trim())) continue;
+                for (let j = i + 1; j < lines.length; j += 1) {
+                  const candidate = lines[j].trim();
+                  if (!candidate) continue;
+                  return candidate.toLowerCase();
+                }
+                return '';
+              }
+              return '';
+            };
+
+            const responseValue = findResponseValue();
+            const shouldApplyLabel = responseValue === positiveResponse;
+
+            core.setOutput('response_value', responseValue || 'not-found');
+            core.setOutput('should_apply_label', shouldApplyLabel ? 'true' : 'false');
+
+      - name: Apply label
+        if: ${{ steps.evaluate.outputs.should_apply_label == 'true' }}
+        uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_LABEL_NAME: ${{ inputs.label_name }}
+        with:
+          script: |
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
+            const labelToApply = process.env.INPUT_LABEL_NAME;
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number,
+              labels: [labelToApply]
+            });
+
+# Example per-repo caller workflow:
+#
+# name: Apply issue-form iteration label
+#
+# on:
+#   issues:
+#     types: [opened, edited]
+#
+# jobs:
+#   call-reusable-worker:
+#     if: ${{ github.event.issue.state == 'open' }}
+#     uses: iOPSPro/.github/.github/workflows/apply-issue-form-iteration-label.yml@main
+#     with:
+#       owner: ${{ github.repository_owner }}
+#       repo: ${{ github.event.repository.name }}
+#       issue_number: ${{ github.event.issue.number }}
+#     secrets: inherit

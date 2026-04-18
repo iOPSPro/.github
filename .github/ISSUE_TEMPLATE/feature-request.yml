@@ -16,6 +16,18 @@ body:
 
         Keep details safe for a public repository (no customer secrets, credentials, or private URLs).
 
+  - type: dropdown
+    id: assign_current_iteration
+    attributes:
+      label: Assign to current iteration?
+      description: Select "Yes" to signal automation to add the `assign-current-iteration` label after issue creation.
+      options:
+        - "No"
+        - "Yes"
+      default: 0
+    validations:
+      required: true
+
   - type: textarea
     id: problem
     attributes:
