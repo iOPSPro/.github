@@ -1,5 +1,3 @@
-Ok. Here is the .github/workflows/create-testing-subissue.yml
-
 name: Create testing sub-issue (reusable)
 
 on:
@@ -25,6 +23,30 @@ on:
         description: True if the parent issue has the needs-testing label
         required: true
         type: boolean
+      project_owner:
+        description: Organization or user that owns the Project V2
+        required: false
+        default: iOPSPro
+        type: string
+      project_number:
+        description: Project V2 number (e.g., 5 for iOPSPro/5)
+        required: false
+        default: 5
+        type: number
+      iteration_field_name:
+        description: Primary Project Iteration field name to copy from parent
+        required: false
+        default: Iteration
+        type: string
+      secondary_iteration_field_name:
+        description: Secondary Project Iteration field name to copy from parent
+        required: false
+        default: 60 Day Block
+        type: string
+    secrets:
+      project_token:
+        description: Token with access to read/write Project V2 fields
+        required: true
 
 jobs:
   create_testing_subissue:
@@ -61,6 +83,7 @@ jobs:
             core.setOutput('already_created', alreadyCreated ? 'true' : 'false');
             core.setOutput('parent_labels_json', JSON.stringify(labels));
             core.setOutput('parent_assignees_json', JSON.stringify(assignees));
+            core.setOutput('parent_issue_node_id', issue.node_id);
 
       - name: Create testing child issue
         if: ${{ steps.parent.outputs.already_created != 'true' }}
@@ -102,6 +125,7 @@ jobs:
 
             core.setOutput('child_issue_number', String(created.data.number));
             core.setOutput('child_issue_id', String(created.data.id));
+            core.setOutput('child_issue_node_id', String(created.data.node_id));
 
       - name: Attach testing child as sub-issue
         if: ${{ steps.parent.outputs.already_created != 'true' }}
@@ -119,6 +143,267 @@ jobs:
               issue_number: parentIssueNumber,
               sub_issue_id: childIssueId
             });
+
+      - name: Copy project iteration fields from parent to child
+        if: ${{ steps.parent.outputs.already_created != 'true' }}
+        uses: actions/github-script@v8
+        env:
+          INPUT_PROJECT_OWNER: ${{ inputs.project_owner }}
+          INPUT_PROJECT_NUMBER: ${{ inputs.project_number }}
+          INPUT_PRIMARY_FIELD_NAME: ${{ inputs.iteration_field_name }}
+          INPUT_SECONDARY_FIELD_NAME: ${{ inputs.secondary_iteration_field_name }}
+          INPUT_PARENT_NODE_ID: ${{ steps.parent.outputs.parent_issue_node_id }}
+          INPUT_CHILD_NODE_ID: ${{ steps.create_child.outputs.child_issue_node_id }}
+        with:
+          github-token: ${{ secrets.project_token }}
+          script: |
+            const projectOwner = process.env.INPUT_PROJECT_OWNER;
+            const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER);
+            const primaryFieldName = (process.env.INPUT_PRIMARY_FIELD_NAME || 'Iteration').trim();
+            const secondaryFieldName = (process.env.INPUT_SECONDARY_FIELD_NAME || '60 Day Block').trim();
+            const parentIssueNodeId = process.env.INPUT_PARENT_NODE_ID;
+            const childIssueNodeId = process.env.INPUT_CHILD_NODE_ID;
+
+            const queryProjectForOrg = `
+              query($login: String!, $number: Int!, $cursor: String) {
+                organization(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        ... on ProjectV2IterationField {
+                          id
+                          name
+                        }
+                      }
+                    }
+                    items(first: 100, after: $cursor) {
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
+                      nodes {
+                        id
+                        content {
+                          ... on Issue {
+                            id
+                          }
+                        }
+                        fieldValues(first: 50) {
+                          nodes {
+                            ... on ProjectV2ItemFieldIterationValue {
+                              field {
+                                ... on ProjectV2IterationField {
+                                  id
+                                  name
+                                }
+                              }
+                              iterationId
+                              title
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const queryProjectForUser = `
+              query($login: String!, $number: Int!, $cursor: String) {
+                user(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        ... on ProjectV2IterationField {
+                          id
+                          name
+                        }
+                      }
+                    }
+                    items(first: 100, after: $cursor) {
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
+                      nodes {
+                        id
+                        content {
+                          ... on Issue {
+                            id
+                          }
+                        }
+                        fieldValues(first: 50) {
+                          nodes {
+                            ... on ProjectV2ItemFieldIterationValue {
+                              field {
+                                ... on ProjectV2IterationField {
+                                  id
+                                  name
+                                }
+                              }
+                              iterationId
+                              title
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const getProjectPage = async (cursor = null) => {
+              try {
+                const orgResult = await github.graphql(queryProjectForOrg, {
+                  login: projectOwner,
+                  number: projectNumber,
+                  cursor
+                });
+                const orgProject = orgResult?.organization?.projectV2;
+                if (orgProject) return orgProject;
+              } catch (error) {
+                // Ignore and try user lookup next.
+              }
+
+              const userResult = await github.graphql(queryProjectForUser, {
+                login: projectOwner,
+                number: projectNumber,
+                cursor
+              });
+              const userProject = userResult?.user?.projectV2;
+              if (userProject) return userProject;
+
+              throw new Error(`Project not found: ${projectOwner}/${projectNumber}`);
+            };
+
+            const firstPage = await getProjectPage(null);
+            const projectId = firstPage.id;
+            const projectTitle = firstPage.title;
+
+            const availableIterationFields = (firstPage.fields?.nodes || []).filter(Boolean);
+            const availableFieldMap = new Map(
+              availableIterationFields.map(field => [(field.name || '').trim().toLowerCase(), field])
+            );
+
+            const fieldNamesToCopy = [primaryFieldName, secondaryFieldName].filter(Boolean);
+            const desiredFieldNames = fieldNamesToCopy.map(name => name.toLowerCase());
+
+            let parentItem =
+              (firstPage.items?.nodes || []).find(item => item?.content?.id === parentIssueNodeId) || null;
+            let childItem =
+              (firstPage.items?.nodes || []).find(item => item?.content?.id === childIssueNodeId) || null;
+
+            let hasNextPage = firstPage.items?.pageInfo?.hasNextPage || false;
+            let cursor = firstPage.items?.pageInfo?.endCursor || null;
+
+            while ((!parentItem || !childItem) && hasNextPage) {
+              const nextPage = await getProjectPage(cursor);
+
+              if (!parentItem) {
+                parentItem =
+                  (nextPage.items?.nodes || []).find(item => item?.content?.id === parentIssueNodeId) || null;
+              }
+
+              if (!childItem) {
+                childItem =
+                  (nextPage.items?.nodes || []).find(item => item?.content?.id === childIssueNodeId) || null;
+              }
+
+              hasNextPage = nextPage.items?.pageInfo?.hasNextPage || false;
+              cursor = nextPage.items?.pageInfo?.endCursor || null;
+            }
+
+            if (!childItem) {
+              const addToProjectMutation = `
+                mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                    item {
+                      id
+                    }
+                  }
+                }
+              `;
+
+              const addResult = await github.graphql(addToProjectMutation, {
+                projectId,
+                contentId: childIssueNodeId
+              });
+
+              const addedChildItemId = addResult?.addProjectV2ItemById?.item?.id || null;
+              if (!addedChildItemId) {
+                throw new Error(`Failed to add testing child issue to project "${projectTitle}".`);
+              }
+
+              childItem = {
+                id: addedChildItemId,
+                fieldValues: { nodes: [] }
+              };
+            }
+
+            if (!parentItem) {
+              core.info(`Parent issue is not present in project "${projectTitle}". Skipping project field copy.`);
+              return;
+            }
+
+            const parentIterationValues = (parentItem.fieldValues?.nodes || [])
+              .filter(Boolean)
+              .filter(value => {
+                const fieldName = value?.field?.name?.trim().toLowerCase();
+                return fieldName && desiredFieldNames.includes(fieldName);
+              });
+
+            if (parentIterationValues.length === 0) {
+              core.info(`No matching parent iteration field values found to copy from project "${projectTitle}".`);
+              return;
+            }
+
+            const updateIterationMutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $iterationId: String!) {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { iterationId: $iterationId }
+                  }
+                ) {
+                  projectV2Item {
+                    id
+                  }
+                }
+              }
+            `;
+
+            for (const value of parentIterationValues) {
+              const parentFieldName = value?.field?.name?.trim();
+              const parentFieldId = value?.field?.id;
+              const parentIterationId = value?.iterationId;
+              const normalizedFieldName = parentFieldName?.toLowerCase();
+
+              if (!parentFieldName || !parentFieldId || !parentIterationId) {
+                continue;
+              }
+
+              if (!availableFieldMap.has(normalizedFieldName)) {
+                core.info(`Field "${parentFieldName}" is not available on project "${projectTitle}". Skipping.`);
+                continue;
+              }
+
+              await github.graphql(updateIterationMutation, {
+                projectId,
+                itemId: childItem.id,
+                fieldId: parentFieldId,
+                iterationId: parentIterationId
+              });
+
+              core.info(`Copied "${parentFieldName}" = "${value.title}" from parent to testing child.`);
+            }
 
       - name: Add testing-created label to parent
         if: ${{ steps.parent.outputs.already_created != 'true' }}
@@ -174,24 +459,7 @@ jobs:
 #       issue_number: ${{ github.event.issue.number }}
 #       parent_title: ${{ github.event.issue.title }}
 #       has_needs_testing: ${{ contains(github.event.issue.labels.*.name, 'needs-testing') }}
-#     secrets: inherit
-
-and here is the iops-planning.github/workflows/spawn-testing-issue.yml
-
-name: Spawn testing issue
-
-on:
-  issues:
-    types: [opened]
-
-jobs:
-  call-reusable-worker:
-    if: ${{ github.event.issue.state == 'open' && contains(github.event.issue.labels.*.name, 'needs-testing') }}
-    uses: iOPSPro/.github/.github/workflows/create-testing-subissue.yml@main
-    with:
-      owner: ${{ github.repository_owner }}
-      repo: ${{ github.event.repository.name }}
-      issue_number: ${{ github.event.issue.number }}
-      parent_title: ${{ github.event.issue.title }}
-      has_needs_testing: ${{ contains(github.event.issue.labels.*.name, 'needs-testing') }}
-    secrets: inherit
+#       project_owner: iOPSPro
+#       project_number: 5
+#     secrets:
+#       project_token: ${{ secrets.PROJECT_TOKEN }}
