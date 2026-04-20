@@ -52,7 +52,6 @@ jobs:
   create_testing_subissue:
     name: Create testing child issue
     runs-on: ubuntu-latest
-    if: ${{ inputs.has_needs_testing }}
     permissions:
       issues: write
       contents: read
@@ -83,14 +82,16 @@ jobs:
 
             const assignees = (issue.assignees || []).map(assignee => assignee.login);
             const alreadyCreated = labels.includes('testing-created');
+            const hasNeedsTesting = labels.includes('needs-testing');
 
             core.setOutput('already_created', alreadyCreated ? 'true' : 'false');
+            core.setOutput('has_needs_testing', hasNeedsTesting ? 'true' : 'false');
             core.setOutput('parent_labels_json', JSON.stringify(labels));
             core.setOutput('parent_assignees_json', JSON.stringify(assignees));
             core.setOutput('parent_issue_node_id', issue.node_id);
 
       - name: Create testing child issue
-        if: ${{ steps.parent.outputs.already_created != 'true' }}
+        if: ${{ steps.parent.outputs.already_created != 'true' && steps.parent.outputs.has_needs_testing == 'true' }}
         id: create_child
         uses: actions/github-script@v8
         env:
@@ -138,7 +139,7 @@ jobs:
             core.setOutput('child_issue_node_id', String(created.data.node_id));
 
       - name: Attach testing child as sub-issue
-        if: ${{ steps.parent.outputs.already_created != 'true' }}
+        if: ${{ steps.parent.outputs.already_created != 'true' && steps.parent.outputs.has_needs_testing == 'true' }}
         uses: actions/github-script@v8
         env:
           INPUT_OWNER: ${{ inputs.owner }}
@@ -160,7 +161,7 @@ jobs:
             });
 
       - name: Copy project iteration fields from parent to child
-        if: ${{ steps.parent.outputs.already_created != 'true' }}
+        if: ${{ steps.parent.outputs.already_created != 'true' && steps.parent.outputs.has_needs_testing == 'true' }}
         uses: actions/github-script@v8
         env:
           INPUT_PROJECT_OWNER: ${{ inputs.project_owner }}
@@ -421,7 +422,7 @@ jobs:
             }
 
       - name: Add testing-created label to parent
-        if: ${{ steps.parent.outputs.already_created != 'true' }}
+        if: ${{ steps.parent.outputs.already_created != 'true' && steps.parent.outputs.has_needs_testing == 'true' }}
         uses: actions/github-script@v8
         env:
           INPUT_OWNER: ${{ inputs.owner }}
@@ -445,7 +446,7 @@ jobs:
             });
 
       - name: Comment on parent issue
-        if: ${{ steps.parent.outputs.already_created != 'true' }}
+        if: ${{ steps.parent.outputs.already_created != 'true' && steps.parent.outputs.has_needs_testing == 'true' }}
         uses: actions/github-script@v8
         env:
           INPUT_OWNER: ${{ inputs.owner }}
@@ -476,14 +477,14 @@ jobs:
 #
 # jobs:
 #   call-reusable-worker:
-#     if: ${{ github.event.issue.state == 'open' && contains(github.event.issue.labels.*.name, 'needs-testing') }}
+#     if: ${{ github.event.issue.state == 'open' }}
 #     uses: iOPSPro/.github/.github/workflows/create-testing-subissue.yml@main
 #     with:
 #       owner: ${{ github.repository_owner }}
 #       repo: ${{ github.event.repository.name }}
 #       issue_number: ${{ github.event.issue.number }}
 #       parent_title: ${{ github.event.issue.title }}
-#       has_needs_testing: ${{ contains(github.event.issue.labels.*.name, 'needs-testing') }}
+#       has_needs_testing: true
 #       project_owner: iOPSPro
 #       project_number: 5
 #     secrets:
