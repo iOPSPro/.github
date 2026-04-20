@@ -5,7 +5,6 @@ type: Feature
 labels:
   - enhancement
   - needs-triage
-  - needs-testing
 projects:
   - iOPSPro/5
 body:
@@ -24,6 +23,17 @@ body:
       options:
         - "No"
         - "Yes"
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: needs_testing
+    attributes:
+      label: Does this issue need testing?
+      options:
+        - "Yes"
+        - "No"
       default: 0
     validations:
       required: true
