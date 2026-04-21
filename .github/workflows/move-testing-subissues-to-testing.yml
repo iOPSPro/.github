@@ -1,0 +1,199 @@
+name: Move testing sub-issues to Testing
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        required: true
+        type: string
+      repo:
+        required: true
+        type: string
+      issue_number:
+        required: true
+        type: number
+    secrets:
+      project_token:
+        required: true
+
+jobs:
+  move-testing-subissues:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      issues: read
+
+    steps:
+      - name: Move matching testing sub-issues to Testing
+        uses: actions/github-script@v7
+        env:
+          OWNER: ${{ inputs.owner }}
+          REPO: ${{ inputs.repo }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        with:
+          github-token: ${{ secrets.project_token }}
+          script: |
+            const owner = process.env.OWNER;
+            const repo = process.env.REPO;
+            const parentIssueNumber = Number(process.env.ISSUE_NUMBER);
+
+            core.info(`Parent issue closed: ${owner}/${repo}#${parentIssueNumber}`);
+
+            async function getAllSubIssues() {
+              let page = 1;
+              const all = [];
+
+              while (true) {
+                const resp = await github.request(
+                  "GET /repos/{owner}/{repo}/issues/{issue_number}/sub_issues",
+                  {
+                    owner,
+                    repo,
+                    issue_number: parentIssueNumber,
+                    per_page: 100,
+                    page,
+                    headers: {
+                      "X-GitHub-Api-Version": "2022-11-28"
+                    }
+                  }
+                );
+
+                const items = resp.data || [];
+                all.push(...items);
+
+                if (items.length < 100) break;
+                page += 1;
+              }
+
+              return all;
+            }
+
+            async function getIssueProjectContext(issueNodeId) {
+              const query = `
+                query($issueId: ID!) {
+                  node(id: $issueId) {
+                    ... on Issue {
+                      id
+                      title
+                      projectItems(first: 20) {
+                        nodes {
+                          id
+                          project {
+                            id
+                            title
+                            fields(first: 50) {
+                              nodes {
+                                __typename
+                                ... on ProjectV2FieldCommon {
+                                  id
+                                  name
+                                }
+                                ... on ProjectV2SingleSelectField {
+                                  id
+                                  name
+                                  options {
+                                    id
+                                    name
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              `;
+
+              return await github.graphql(query, { issueId: issueNodeId });
+            }
+
+            async function updateStatus(projectId, itemId, fieldId, optionId) {
+              const mutation = `
+                mutation(
+                  $projectId: ID!,
+                  $itemId: ID!,
+                  $fieldId: ID!,
+                  $optionId: String!
+                ) {
+                  updateProjectV2ItemFieldValue(
+                    input: {
+                      projectId: $projectId
+                      itemId: $itemId
+                      fieldId: $fieldId
+                      value: { singleSelectOptionId: $optionId }
+                    }
+                  ) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }
+              `;
+
+              return await github.graphql(mutation, {
+                projectId,
+                itemId,
+                fieldId,
+                optionId
+              });
+            }
+
+            const subIssues = await getAllSubIssues();
+            core.info(`Found ${subIssues.length} sub-issues.`);
+
+            const testingSubIssues = subIssues.filter(issue =>
+              (issue.title || "").includes("Testing:")
+            );
+
+            if (testingSubIssues.length === 0) {
+              core.info('No sub-issues found with "Testing:" in the title.');
+              return;
+            }
+
+            for (const child of testingSubIssues) {
+              core.info(`Processing child issue #${child.number}: ${child.title}`);
+
+              const data = await getIssueProjectContext(child.node_id);
+              const projectItems = data?.node?.projectItems?.nodes || [];
+
+              if (projectItems.length === 0) {
+                core.warning(`Child issue #${child.number} is not in any project.`);
+                continue;
+              }
+
+              let updated = false;
+
+              for (const item of projectItems) {
+                const project = item.project;
+                const fields = project?.fields?.nodes || [];
+
+                const statusField = fields.find(f => f.name === "Status");
+                if (!statusField) {
+                  core.info(`Project "${project?.title}" has no Status field. Skipping.`);
+                  continue;
+                }
+
+                const testingOption = statusField.options?.find(opt => opt.name === "Testing");
+                if (!testingOption) {
+                  core.info(`Project "${project?.title}" has no Testing option in Status. Skipping.`);
+                  continue;
+                }
+
+                await updateStatus(
+                  project.id,
+                  item.id,
+                  statusField.id,
+                  testingOption.id
+                );
+
+                core.info(`Updated child issue #${child.number} in project "${project.title}" to Status = Testing`);
+                updated = true;
+              }
+
+              if (!updated) {
+                core.warning(`No matching project/status/testing option found for child issue #${child.number}.`);
+              }
+            }
