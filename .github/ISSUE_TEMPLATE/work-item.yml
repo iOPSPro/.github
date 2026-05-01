@@ -39,6 +39,18 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: specific_application
+    attributes:
+      label: Is there a specific application this is for?
+      options:
+        - "N/A"
+        - "V1"
+        - "V2"
+      default: 0
+    validations:
+      required: true
+
   - type: textarea
     id: objective
     attributes:
