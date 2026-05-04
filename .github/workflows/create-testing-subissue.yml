@@ -43,6 +43,11 @@ on:
         required: false
         default: 60 Day Block
         type: string
+      application_version_field_name:
+        description: Project single-select Application Version field name to copy from parent
+        required: false
+        default: Application Version
+        type: string
     secrets:
       project_token:
         description: Token with access to read/write Project V2 fields
@@ -160,7 +165,7 @@ jobs:
               sub_issue_id: childIssueId
             });
 
-      - name: Copy project iteration fields from parent to child
+      - name: Copy project fields from parent to child
         if: ${{ steps.parent.outputs.already_created != 'true' && steps.parent.outputs.has_needs_testing == 'true' }}
         uses: actions/github-script@v8
         env:
@@ -168,6 +173,7 @@ jobs:
           INPUT_PROJECT_NUMBER: ${{ inputs.project_number }}
           INPUT_PRIMARY_FIELD_NAME: ${{ inputs.iteration_field_name }}
           INPUT_SECONDARY_FIELD_NAME: ${{ inputs.secondary_iteration_field_name }}
+          INPUT_APPLICATION_VERSION_FIELD_NAME: ${{ inputs.application_version_field_name }}
           INPUT_PARENT_NODE_ID: ${{ steps.parent.outputs.parent_issue_node_id }}
           INPUT_CHILD_NODE_ID: ${{ steps.create_child.outputs.child_issue_node_id }}
         with:
@@ -177,6 +183,7 @@ jobs:
             const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER);
             const primaryFieldName = (process.env.INPUT_PRIMARY_FIELD_NAME || 'Iteration').trim();
             const secondaryFieldName = (process.env.INPUT_SECONDARY_FIELD_NAME || '60 Day Block').trim();
+            const applicationVersionFieldName = (process.env.INPUT_APPLICATION_VERSION_FIELD_NAME || 'Application Version').trim();
             const parentIssueNodeId = process.env.INPUT_PARENT_NODE_ID;
             const childIssueNodeId = process.env.INPUT_CHILD_NODE_ID;
 
@@ -191,6 +198,14 @@ jobs:
                         ... on ProjectV2IterationField {
                           id
                           name
+                        }
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
                         }
                       }
                     }
@@ -218,6 +233,16 @@ jobs:
                               iterationId
                               title
                             }
+                            ... on ProjectV2ItemFieldSingleSelectValue {
+                              field {
+                                ... on ProjectV2SingleSelectField {
+                                  id
+                                  name
+                                }
+                              }
+                              optionId
+                              name
+                            }
                           }
                         }
                       }
@@ -238,6 +263,14 @@ jobs:
                         ... on ProjectV2IterationField {
                           id
                           name
+                        }
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
                         }
                       }
                     }
@@ -264,6 +297,16 @@ jobs:
                               }
                               iterationId
                               title
+                            }
+                            ... on ProjectV2ItemFieldSingleSelectValue {
+                              field {
+                                ... on ProjectV2SingleSelectField {
+                                  id
+                                  name
+                                }
+                              }
+                              optionId
+                              name
                             }
                           }
                         }
@@ -302,9 +345,9 @@ jobs:
             const projectId = firstPage.id;
             const projectTitle = firstPage.title;
 
-            const availableIterationFields = (firstPage.fields?.nodes || []).filter(Boolean);
+            const availableProjectFields = (firstPage.fields?.nodes || []).filter(Boolean);
             const availableFieldMap = new Map(
-              availableIterationFields.map(field => [(field.name || '').trim().toLowerCase(), field])
+              availableProjectFields.map(field => [(field.name || '').trim().toLowerCase(), field])
             );
 
             const fieldNamesToCopy = [primaryFieldName, secondaryFieldName].filter(Boolean);
@@ -376,7 +419,6 @@ jobs:
 
             if (parentIterationValues.length === 0) {
               core.info(`No matching parent iteration field values found to copy from project "${projectTitle}".`);
-              return;
             }
 
             const updateIterationMutation = `
@@ -420,6 +462,52 @@ jobs:
 
               core.info(`Copied "${parentFieldName}" = "${value.title}" from parent to testing child.`);
             }
+
+            const normalizedApplicationVersionFieldName = applicationVersionFieldName.toLowerCase();
+            const parentApplicationVersionValue = (parentItem.fieldValues?.nodes || [])
+              .filter(Boolean)
+              .find(value => value?.field?.name?.trim().toLowerCase() === normalizedApplicationVersionFieldName);
+
+            if (!parentApplicationVersionValue?.optionId) {
+              core.info(`No parent "${applicationVersionFieldName}" value found to copy from project "${projectTitle}".`);
+              return;
+            }
+
+            const parentApplicationVersionFieldName = parentApplicationVersionValue.field.name.trim();
+            const parentApplicationVersionFieldId = parentApplicationVersionValue.field.id;
+
+            if (!availableFieldMap.has(normalizedApplicationVersionFieldName)) {
+              core.info(`Field "${parentApplicationVersionFieldName}" is not available on project "${projectTitle}". Skipping.`);
+              return;
+            }
+
+            const updateSingleSelectMutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { singleSelectOptionId: $optionId }
+                  }
+                ) {
+                  projectV2Item {
+                    id
+                  }
+                }
+              }
+            `;
+
+            await github.graphql(updateSingleSelectMutation, {
+              projectId,
+              itemId: childItem.id,
+              fieldId: parentApplicationVersionFieldId,
+              optionId: parentApplicationVersionValue.optionId
+            });
+
+            core.info(
+              `Copied "${parentApplicationVersionFieldName}" = "${parentApplicationVersionValue.name}" from parent to testing child.`
+            );
 
       - name: Add testing-created label to parent
         if: ${{ steps.parent.outputs.already_created != 'true' && steps.parent.outputs.has_needs_testing == 'true' }}
