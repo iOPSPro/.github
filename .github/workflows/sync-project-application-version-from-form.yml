@@ -1,0 +1,323 @@
+name: Sync project application version from issue form (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        description: Organization or user that owns the repository containing the issue
+        required: true
+        type: string
+      repo:
+        description: Repository name containing the issue
+        required: true
+        type: string
+      issue_number:
+        description: Issue number to update
+        required: true
+        type: number
+      project_owner:
+        description: Organization or user that owns the Project V2
+        required: true
+        type: string
+      project_number:
+        description: Project V2 number (e.g., 5 for iOPSPro/5)
+        required: true
+        type: number
+      project_field_name:
+        description: Project single-select field name
+        required: false
+        default: Application Version
+        type: string
+      question_heading:
+        description: Issue form heading to inspect for application version
+        required: false
+        default: Is there a specific application this is for?
+        type: string
+    secrets:
+      project_token:
+        description: Token with access to read/write Project V2 fields
+        required: true
+
+jobs:
+  sync_application_version:
+    name: Set Project Application Version from issue form
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+
+    steps:
+      - name: Set Application Version field
+        uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_PROJECT_OWNER: ${{ inputs.project_owner }}
+          INPUT_PROJECT_NUMBER: ${{ inputs.project_number }}
+          INPUT_PROJECT_FIELD_NAME: ${{ inputs.project_field_name }}
+          INPUT_QUESTION_HEADING: ${{ inputs.question_heading }}
+        with:
+          github-token: ${{ secrets.project_token }}
+          script: |
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
+            const projectOwner = process.env.INPUT_PROJECT_OWNER;
+            const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER);
+            const fieldName = (process.env.INPUT_PROJECT_FIELD_NAME || 'Application Version').trim();
+            const heading = (process.env.INPUT_QUESTION_HEADING || 'Is there a specific application this is for?').trim();
+            const validResponses = new Set(['V1', 'V2', 'Both', 'N/A']);
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number
+            });
+
+            const issueBody = issue.body || '';
+            const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // GitHub issue forms render question labels as `###` markdown headings.
+            const headingPattern = new RegExp(`^###\\s*${escapedHeading}\\s*$`, 'i');
+            const lines = issueBody.split(/\r?\n/);
+
+            const findResponseValue = () => {
+              for (let i = 0; i < lines.length; i += 1) {
+                if (!headingPattern.test(lines[i].trim())) continue;
+                for (let j = i + 1; j < lines.length; j += 1) {
+                  const candidate = lines[j].trim();
+                  if (!candidate) continue;
+                  return candidate;
+                }
+                return '';
+              }
+              return '';
+            };
+
+            const responseValue = findResponseValue();
+            if (!responseValue) {
+              core.info(`Heading "${heading}" not found on #${issue_number}. Skipping.`);
+              return;
+            }
+
+            if (!validResponses.has(responseValue)) {
+              throw new Error(
+                `Unsupported application version response "${responseValue}" on #${issue_number}. Expected one of: ${[...validResponses].join(', ')}.`
+              );
+            }
+
+            const issueNodeId = issue.node_id;
+            if (!issueNodeId) {
+              throw new Error(`Issue #${issue_number} has no node_id; cannot use Projects V2 GraphQL mutations.`);
+            }
+
+            const queryProjectForOrg = `
+              query($login: String!, $number: Int!, $cursor: String) {
+                organization(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
+                    items(first: 100, after: $cursor) {
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
+                      nodes {
+                        id
+                        content {
+                          ... on Issue {
+                            id
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const queryProjectForUser = `
+              query($login: String!, $number: Int!, $cursor: String) {
+                user(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
+                    items(first: 100, after: $cursor) {
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
+                      nodes {
+                        id
+                        content {
+                          ... on Issue {
+                            id
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const getProjectPage = async (cursor = null) => {
+              try {
+                const orgResult = await github.graphql(queryProjectForOrg, {
+                  login: projectOwner,
+                  number: projectNumber,
+                  cursor
+                });
+                const orgProject = orgResult?.organization?.projectV2;
+                if (orgProject) return orgProject;
+              } catch (error) {
+                // Ignore and try user lookup next.
+              }
+
+              const userResult = await github.graphql(queryProjectForUser, {
+                login: projectOwner,
+                number: projectNumber,
+                cursor
+              });
+              const userProject = userResult?.user?.projectV2;
+              if (userProject) return userProject;
+
+              throw new Error(`Project not found: ${projectOwner}/${projectNumber}`);
+            };
+
+            const firstPage = await getProjectPage(null);
+            const projectId = firstPage.id;
+            const projectTitle = firstPage.title;
+            const singleSelectFields = (firstPage.fields?.nodes || []).filter(Boolean);
+            const field = singleSelectFields.find(
+              (candidate) => (candidate.name || '').trim().toLowerCase() === fieldName.toLowerCase()
+            );
+
+            if (!field) {
+              const availableFieldNames = singleSelectFields.map((candidate) => candidate.name).filter(Boolean);
+              throw new Error(
+                `Single-select field "${fieldName}" not found on project "${projectTitle}". Available single-select fields: ${availableFieldNames.join(', ')}`
+              );
+            }
+
+            const option = (field.options || []).find(
+              (candidate) => (candidate.name || '').trim().toLowerCase() === responseValue.toLowerCase()
+            );
+
+            if (!option) {
+              const availableOptionNames = (field.options || []).map((candidate) => candidate.name).filter(Boolean);
+              throw new Error(
+                `Option "${responseValue}" not found in field "${fieldName}" on project "${projectTitle}". Available options: ${availableOptionNames.join(', ')}`
+              );
+            }
+
+            let itemId =
+              (firstPage.items?.nodes || []).find((item) => item?.content?.id === issueNodeId)?.id || null;
+
+            let hasNextPage = firstPage.items?.pageInfo?.hasNextPage || false;
+            let cursor = firstPage.items?.pageInfo?.endCursor || null;
+
+            while (!itemId && hasNextPage) {
+              const nextPage = await getProjectPage(cursor);
+              itemId =
+                (nextPage.items?.nodes || []).find((item) => item?.content?.id === issueNodeId)?.id || null;
+              hasNextPage = nextPage.items?.pageInfo?.hasNextPage || false;
+              cursor = nextPage.items?.pageInfo?.endCursor || null;
+            }
+
+            if (!itemId) {
+              const addToProjectMutation = `
+                mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                    item {
+                      id
+                    }
+                  }
+                }
+              `;
+
+              const addResult = await github.graphql(addToProjectMutation, {
+                projectId,
+                contentId: issueNodeId
+              });
+
+              itemId = addResult?.addProjectV2ItemById?.item?.id || null;
+            }
+
+            if (!itemId) {
+              throw new Error(`Failed to locate or create Project item for issue #${issue_number} in ${projectOwner}/${projectNumber}.`);
+            }
+
+            const updateSingleSelectMutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { singleSelectOptionId: $optionId }
+                  }
+                ) {
+                  projectV2Item {
+                    id
+                  }
+                }
+              }
+            `;
+
+            await github.graphql(updateSingleSelectMutation, {
+              projectId,
+              itemId,
+              fieldId: field.id,
+              optionId: option.id
+            });
+
+            core.setOutput('project_title', projectTitle);
+            core.setOutput('field_name', field.name);
+            core.setOutput('application_version', option.name);
+            core.info(`Set "${field.name}" to "${option.name}" on project "${projectTitle}" for #${issue_number}.`);
+
+# Example per-repo caller workflow:
+#
+# name: Sync application version from issue form
+#
+# on:
+#   issues:
+#     types: [opened, edited]
+#
+# jobs:
+#   call-reusable-worker:
+#     if: ${{ github.event.issue.state == 'open' }}
+#     uses: iOPSPro/.github/.github/workflows/sync-project-application-version-from-form.yml@main
+#     with:
+#       owner: ${{ github.repository_owner }}
+#       repo: ${{ github.event.repository.name }}
+#       issue_number: ${{ github.event.issue.number }}
+#       project_owner: iOPSPro
+#       project_number: 5
+#     secrets:
+#       project_token: ${{ secrets.PROJECT_TOKEN }}

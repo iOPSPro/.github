@@ -67,6 +67,18 @@ To support project iteration assignment flows based on issue form answers:
 
 This provides a stable signal that downstream workflows can use to assign project fields (for example, current iteration) after issue creation.
 
+## Application Version project field model (automation)
+
+Application version should be stored in the GitHub Project custom field instead of repository labels:
+
+- Project field: `Application Version`
+- Field type: single select
+- Supported options: `V1`, `V2`, `Both`, `N/A`
+- Issue forms include a required dropdown: `Is there a specific application this is for?`
+- Reusable workflow scaffold: `.github/workflows/sync-project-application-version-from-form.yml`
+
+The reusable workflow reads the issue form answer on issue open/edit and sets the Project V2 single-select field directly. This avoids relying on repository-scoped version labels that can be lost when issues move between repositories.
+
 ## Notes
 
 - Repository-specific templates and files take precedence over the defaults stored here.

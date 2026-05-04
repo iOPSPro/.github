@@ -37,6 +37,7 @@ body:
         - "N/A"
         - "V1"
         - "V2"
+        - "Both"
       default: 0
     validations:
       required: true
