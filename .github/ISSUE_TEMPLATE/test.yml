@@ -1,6 +1,6 @@
 name: Test
 description: Create a testing or QA validation task
-title: "[Testing]: "
+title: "Testing: "
 type: Task
 labels:
   - testing

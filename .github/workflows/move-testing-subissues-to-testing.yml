@@ -1,4 +1,4 @@
-name: Move testing sub-issues to Testing
+name: Move testing sub-issues to In progress
 
 on:
   workflow_call:
@@ -25,7 +25,7 @@ jobs:
       issues: read
 
     steps:
-      - name: Move matching testing sub-issues to Testing
+      - name: Move matching testing sub-issues to In progress
         uses: actions/github-script@v7
         env:
           OWNER: ${{ inputs.owner }}
@@ -37,6 +37,7 @@ jobs:
             const owner = process.env.OWNER;
             const repo = process.env.REPO;
             const parentIssueNumber = Number(process.env.ISSUE_NUMBER);
+            const targetStatusName = "In progress";
 
             core.info(`Parent issue closed: ${owner}/${repo}#${parentIssueNumber}`);
 
@@ -176,9 +177,9 @@ jobs:
                   continue;
                 }
 
-                const testingOption = statusField.options?.find(opt => opt.name === "Testing");
-                if (!testingOption) {
-                  core.info(`Project "${project?.title}" has no Testing option in Status. Skipping.`);
+                const targetStatusOption = statusField.options?.find(opt => opt.name === targetStatusName);
+                if (!targetStatusOption) {
+                  core.info(`Project "${project?.title}" has no ${targetStatusName} option in Status. Skipping.`);
                   continue;
                 }
 
@@ -186,14 +187,14 @@ jobs:
                   project.id,
                   item.id,
                   statusField.id,
-                  testingOption.id
+                  targetStatusOption.id
                 );
 
-                core.info(`Updated child issue #${child.number} in project "${project.title}" to Status = Testing`);
+                core.info(`Updated child issue #${child.number} in project "${project.title}" to Status = ${targetStatusName}`);
                 updated = true;
               }
 
               if (!updated) {
-                core.warning(`No matching project/status/testing option found for child issue #${child.number}.`);
+                core.warning(`No matching project/status/${targetStatusName} option found for child issue #${child.number}.`);
               }
             }
