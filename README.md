@@ -55,7 +55,15 @@ Important limitations and expectations:
 - This `.github` repository does not automatically receive issue events from every repository in the organization.
 - Reusable workflows in `.github/workflows/` are meant to be called by small per-repo caller workflows in participating repositories.
 - Reusable workflow scaffold: `.github/workflows/create-testing-subissue.yml`.
+- Reusable workflow for manually created testing child issues: `.github/workflows/copy-parent-project-fields-to-test-child.yml`.
 - GitHub Issue Forms cannot conditionally apply labels based on dropdown answers. The forms collect testing intent and instruct the author to add `needs-testing` when appropriate.
+
+There are two supported testing child issue paths:
+
+- Automation-created child issue: a parent issue with `needs-testing` calls `create-testing-subissue.yml`. That workflow creates the child, attaches it as a sub-issue, adds it to the configured project when needed, and copies `Iteration`, `60 Day Block`, and `Application Version` from the parent.
+- Manually created child issue: a user creates an issue with the `Test` template, attaches it as a child of a parent issue, and a per-repo caller invokes `copy-parent-project-fields-to-test-child.yml`. That workflow finds the child's parent through the sub-issues API and copies assignees plus the same project fields.
+
+GitHub Actions does not currently expose a dedicated documented `issues` activity type for "issue became a sub-issue." Per-repo callers should trigger the manual-copy workflow on practical nearby events such as `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch`.
 
 ## Conditional iteration label model (automation)
 
