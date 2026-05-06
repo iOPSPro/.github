@@ -73,7 +73,7 @@ Application version should be stored in the GitHub Project custom field instead 
 
 - Project field: `Application Version`
 - Field type: single select
-- Supported options: `V1`, `V2`, `Both`, `N/A`
+- Supported options: `V1`, `V2`, `Backend`, `N/A`, `Both V1 and V2`
 - Issue forms include a required dropdown: `Is there a specific application this is for?`
 - Reusable workflow scaffold: `.github/workflows/sync-project-application-version-from-form.yml`
 

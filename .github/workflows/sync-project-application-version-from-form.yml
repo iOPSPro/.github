@@ -67,7 +67,7 @@ jobs:
             const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER);
             const fieldName = (process.env.INPUT_PROJECT_FIELD_NAME || 'Application Version').trim();
             const heading = (process.env.INPUT_QUESTION_HEADING || 'Is there a specific application this is for?').trim();
-            const validResponses = new Set(['V1', 'V2', 'Both', 'N/A']);
+            const validResponses = new Set(['V1', 'V2', 'Backend', 'N/A', 'Both V1 and V2']);
 
             const { data: issue } = await github.rest.issues.get({
               owner,

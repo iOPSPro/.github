@@ -44,11 +44,11 @@ body:
     attributes:
       label: Is there a specific application this is for?
       options:
-        - "N/A"
         - "V1"
         - "V2"
-        - "Both"
-      default: 0
+        - "Backend"
+        - "N/A"
+        - "Both V1 and V2"
     validations:
       required: true
 
