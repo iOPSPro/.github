@@ -1,0 +1,120 @@
+name: Test
+description: Create a testing or QA validation task
+title: "[Test]: "
+type: Task
+labels:
+  - testing
+  - needs-triage
+projects:
+  - iOPSPro/5
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for standalone testing work, QA validation, regression checks, or release verification.
+
+        Keep details safe for a public repository. Do not include secrets, credentials, or private customer data.
+
+  - type: dropdown
+    id: assign_current_iteration
+    attributes:
+      label: Assign to current iteration?
+      description: Select "Yes" to signal automation to add the `assign-current-iteration` label after issue creation.
+      options:
+        - "No"
+        - "Yes"
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: specific_application
+    attributes:
+      label: Is there a specific application this is for?
+      options:
+        - "V1"
+        - "V2"
+        - "Backend"
+        - "N/A"
+        - "Both V1 and V2"
+    validations:
+      required: true
+
+  - type: input
+    id: related_issue
+    attributes:
+      label: Related issue / parent work
+      description: Link the issue, PR, release, or work item this testing supports.
+      placeholder: e.g., #123, repo#456, release v1.2.3
+    validations:
+      required: false
+
+  - type: textarea
+    id: test_objective
+    attributes:
+      label: Test objective
+      description: What needs to be validated and why?
+      placeholder: Describe the behavior, fix, release, workflow, or risk area being tested.
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_scope
+    attributes:
+      label: Test scope
+      description: What is in scope and out of scope for this testing?
+      placeholder: |
+        In scope:
+        Out of scope:
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Where should testing happen?
+      placeholder: e.g., staging / prod / V1 / V2 / tenant / browser / device
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_checklist
+    attributes:
+      label: Test checklist
+      description: List the specific scenarios or acceptance criteria to validate.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / results
+      description: Add screenshots, notes, logs, links, or final pass/fail results. Redact sensitive data.
+      placeholder: |
+        - Result:
+        - Screenshots:
+        - Notes:
+    validations:
+      required: false
+
+  - type: textarea
+    id: blockers
+    attributes:
+      label: Blockers / dependencies
+      description: List anything blocking testing or required before testing can start.
+      placeholder: Link related issues, deployments, credentials process, data setup, or approvals.
+    validations:
+      required: false
+
+  - type: input
+    id: tester
+    attributes:
+      label: Proposed tester (optional)
+      placeholder: "@username or team"
+    validations:
+      required: false
