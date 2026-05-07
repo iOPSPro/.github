@@ -39,9 +39,9 @@ body:
       required: true
 
   - type: dropdown
-    id: specific_application
+    id: specific_environment
     attributes:
-      label: Is there a specific application this is for?
+      label: Is there a specific environment this is for?
       options:
         - "V1"
         - "V2"

@@ -41,9 +41,9 @@ on:
         default: 60 Day Block
         type: string
       application_version_field_name:
-        description: Project single-select Application Version field name to copy from parent
+        description: Project single-select Environment field name to copy from parent
         required: false
-        default: Application Version
+        default: Environment
         type: string
     secrets:
       project_token:
@@ -82,7 +82,7 @@ jobs:
             const testingLabel = (process.env.INPUT_TESTING_LABEL || 'testing').trim();
             const primaryFieldName = (process.env.INPUT_PRIMARY_FIELD_NAME || 'Iteration').trim();
             const secondaryFieldName = (process.env.INPUT_SECONDARY_FIELD_NAME || '60 Day Block').trim();
-            const applicationVersionFieldName = (process.env.INPUT_APPLICATION_VERSION_FIELD_NAME || 'Application Version').trim();
+            const applicationVersionFieldName = (process.env.INPUT_APPLICATION_VERSION_FIELD_NAME || 'Environment').trim();
 
             const { data: childIssue } = await github.rest.issues.get({
               owner,

@@ -60,7 +60,7 @@ Important limitations and expectations:
 
 There are two supported testing child issue paths:
 
-- Automation-created child issue: a parent issue with `needs-testing` calls `create-testing-subissue.yml`. That workflow creates the child, attaches it as a sub-issue, adds it to the configured project when needed, and copies `Iteration`, `60 Day Block`, and `Application Version` from the parent.
+- Automation-created child issue: a parent issue with `needs-testing` calls `create-testing-subissue.yml`. That workflow creates the child, attaches it as a sub-issue, adds it to the configured project when needed, and copies `Iteration`, `60 Day Block`, and `Environment` from the parent.
 - Manually created child issue: a user creates an issue with the `Test` template, attaches it as a child of a parent issue, and a per-repo caller invokes `copy-parent-project-fields-to-test-child.yml`. That workflow finds the child's parent through the sub-issues API and copies assignees plus the same project fields.
 
 GitHub Actions does not currently expose a dedicated documented `issues` activity type for "issue became a sub-issue." Per-repo callers should trigger the manual-copy workflow on practical nearby events such as `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch`.
@@ -75,14 +75,14 @@ To support project iteration assignment flows based on issue form answers:
 
 This provides a stable signal that downstream workflows can use to assign project fields (for example, current iteration) after issue creation.
 
-## Application Version project field model (automation)
+## Environment project field model (automation)
 
-Application version should be stored in the GitHub Project custom field instead of repository labels:
+Environment should be stored in the GitHub Project custom field instead of repository labels:
 
-- Project field: `Application Version`
+- Project field: `Environment`
 - Field type: single select
 - Supported options: `V1`, `V2`, `Backend`, `N/A`, `Both V1 and V2`
-- Issue forms include a required dropdown: `Is there a specific application this is for?`
+- Issue forms include a required dropdown: `Is there a specific environment this is for?`
 - Reusable workflow scaffold: `.github/workflows/sync-project-application-version-from-form.yml`
 
 The reusable workflow reads the issue form answer on issue open/edit and sets the Project V2 single-select field directly. This avoids relying on repository-scoped version labels that can be lost when issues move between repositories.

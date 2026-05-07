@@ -1,4 +1,4 @@
-name: Sync project application version from issue form (reusable)
+name: Sync project environment from issue form (reusable)
 
 on:
   workflow_call:
@@ -26,12 +26,12 @@ on:
       project_field_name:
         description: Project single-select field name
         required: false
-        default: Application Version
+        default: Environment
         type: string
       question_heading:
-        description: Issue form heading to inspect for application version
+        description: Issue form heading to inspect for environment value
         required: false
-        default: Is there a specific application this is for?
+        default: Is there a specific environment this is for?
         type: string
     secrets:
       project_token:
@@ -40,14 +40,14 @@ on:
 
 jobs:
   sync_application_version:
-    name: Set Project Application Version from issue form
+    name: Set Project Environment from issue form
     runs-on: ubuntu-latest
     permissions:
       contents: read
       issues: read
 
     steps:
-      - name: Set Application Version field
+      - name: Set Environment field
         uses: actions/github-script@v8
         env:
           INPUT_OWNER: ${{ inputs.owner }}
@@ -65,8 +65,8 @@ jobs:
             const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
             const projectOwner = process.env.INPUT_PROJECT_OWNER;
             const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER);
-            const fieldName = (process.env.INPUT_PROJECT_FIELD_NAME || 'Application Version').trim();
-            const heading = (process.env.INPUT_QUESTION_HEADING || 'Is there a specific application this is for?').trim();
+            const fieldName = (process.env.INPUT_PROJECT_FIELD_NAME || 'Environment').trim();
+            const heading = (process.env.INPUT_QUESTION_HEADING || 'Is there a specific environment this is for?').trim();
             const validResponses = new Set(['V1', 'V2', 'Backend', 'N/A', 'Both V1 and V2']);
 
             const { data: issue } = await github.rest.issues.get({
@@ -102,7 +102,7 @@ jobs:
 
             if (!validResponses.has(responseValue)) {
               throw new Error(
-                `Unsupported application version response "${responseValue}" on #${issue_number}. Expected one of: ${[...validResponses].join(', ')}.`
+                `Unsupported environment response "${responseValue}" on #${issue_number}. Expected one of: ${[...validResponses].join(', ')}.`
               );
             }
 
@@ -299,11 +299,12 @@ jobs:
             core.setOutput('project_title', projectTitle);
             core.setOutput('field_name', field.name);
             core.setOutput('application_version', option.name);
+            core.setOutput('environment', option.name);
             core.info(`Set "${field.name}" to "${option.name}" on project "${projectTitle}" for #${issue_number}.`);
 
 # Example per-repo caller workflow:
 #
-# name: Sync application version from issue form
+# name: Sync environment from issue form
 #
 # on:
 #   issues:
