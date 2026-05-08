@@ -130,7 +130,8 @@ jobs:
               repo,
               title: childTitle,
               body: childBody,
-              labels: ['testing']
+              labels: ['testing'],
+              type: 'Test'
             };
 
             if (parentAssignees.length > 0) {

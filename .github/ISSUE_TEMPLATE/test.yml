@@ -1,7 +1,7 @@
 name: Testing
 description: Create a testing or QA validation task. If created as a sub-issue of another task, the project fields will automatically copy from the parent issue. 
 title: "Testing: "
-type: Task
+type: Test
 labels:
   - testing
   - needs-triage
