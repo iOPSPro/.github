@@ -38,6 +38,7 @@ jobs:
             const repo = process.env.REPO;
             const parentIssueNumber = Number(process.env.ISSUE_NUMBER);
             const targetStatusName = "In progress";
+            const doneStatusName = "Done";
 
             core.info(`Parent issue closed: ${owner}/${repo}#${parentIssueNumber}`);
 
@@ -101,6 +102,21 @@ jobs:
                               }
                             }
                           }
+                          fieldValues(first: 50) {
+                            nodes {
+                              __typename
+                              ... on ProjectV2ItemFieldSingleSelectValue {
+                                field {
+                                  ... on ProjectV2SingleSelectField {
+                                    id
+                                    name
+                                  }
+                                }
+                                name
+                                optionId
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -157,6 +173,11 @@ jobs:
             for (const child of testingSubIssues) {
               core.info(`Processing child issue #${child.number}: ${child.title}`);
 
+              if ((child.state || "").toLowerCase() === "closed") {
+                core.info(`Child issue #${child.number} is closed. Skipping status update.`);
+                continue;
+              }
+
               const data = await getIssueProjectContext(child.node_id);
               const projectItems = data?.node?.projectItems?.nodes || [];
 
@@ -165,7 +186,7 @@ jobs:
                 continue;
               }
 
-              let updated = false;
+              let handled = false;
 
               for (const item of projectItems) {
                 const project = item.project;
@@ -183,6 +204,17 @@ jobs:
                   continue;
                 }
 
+                const currentStatusValue = (item.fieldValues?.nodes || []).find(value =>
+                  value?.field?.id === statusField.id || value?.field?.name === "Status"
+                );
+                const currentStatusName = currentStatusValue?.name || "";
+
+                if (currentStatusName.toLowerCase() === doneStatusName.toLowerCase()) {
+                  core.info(`Child issue #${child.number} in project "${project.title}" already has Status = ${doneStatusName}. Skipping.`);
+                  handled = true;
+                  continue;
+                }
+
                 await updateStatus(
                   project.id,
                   item.id,
@@ -191,10 +223,10 @@ jobs:
                 );
 
                 core.info(`Updated child issue #${child.number} in project "${project.title}" to Status = ${targetStatusName}`);
-                updated = true;
+                handled = true;
               }
 
-              if (!updated) {
+              if (!handled) {
                 core.warning(`No matching project/status/${targetStatusName} option found for child issue #${child.number}.`);
               }
             }
