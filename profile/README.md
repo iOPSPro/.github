@@ -10,7 +10,7 @@ This repository provides:
 
 - Issue forms in `.github/ISSUE_TEMPLATE/`
 - Reusable GitHub Actions workflows in `.github/workflows/`
-- Project V2 automation conventions for labels, iterations, environment fields, and testing sub-issues
+- Project V2 automation conventions for labels, iterations, environment fields, pull request review queues, and testing sub-issues
 
 It does not currently provide pull request templates, contribution guidelines, code of conduct files, or support policy files.
 
@@ -47,6 +47,7 @@ The workflows in `.github/workflows/` are reusable workflow building blocks. The
 | `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parent issues labeled `needs-testing`; copies assignees and project fields; marks the parent with `testing-created`. | `issues.opened`, `issues.labeled` gated by `needs-testing` |
 | `.github/workflows/copy-parent-project-fields-to-test-child.yml` | For manually created testing child issues, finds the parent issue, copies assignees, adds the child to the project if needed, and copies project fields. | `issues.opened`, `issues.edited`, `issues.labeled`, or `workflow_dispatch` |
 | `.github/workflows/move-testing-subissues-to-testing.yml` | Finds testing sub-issues and moves their Project V2 `Status` to `In progress`. | Parent issue lifecycle events |
+| `.github/workflows/sync-pr-delivery-board-for-review.yml` | Requests review from the configured reviewer, optionally assigns the reviewer, adds the PR to the Delivery Board, sets current `Iteration` and `60 Day Block`, and sets `Status` to `In progress`. Defaults to `ready-for-dr-review` and `drichard1989`. | `pull_request.labeled` gated by `ready-for-dr-review` |
 
 ## Required Labels
 
@@ -59,6 +60,7 @@ These labels act as lightweight contracts between forms, caller workflows, and r
 | `testing` | Issue is a testing or QA validation issue. |
 | `testing-created` | Parent issue already has an automation-created testing child issue. Prevents duplicate child creation. |
 | `assign-current-iteration` | Issue should be assigned to the current Project V2 iteration. Removed after successful sync. |
+| `ready-for-dr-review` | Pull request is ready for Dylan Richard review and should enter the Delivery Board review queue. |
 
 ## Project V2 Requirements
 
@@ -69,7 +71,7 @@ Expected fields:
 - `Iteration`: primary Project V2 iteration field.
 - `60 Day Block`: secondary Project V2 iteration field used by copy/sync workflows where available.
 - `Environment`: single-select field with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`.
-- `Status`: single-select field used by testing sub-issue automation. It must include `In progress`.
+- `Status`: single-select field used by PR and testing sub-issue automation. It must include `In progress`.
 
 Caller repositories typically pass the project token with:
 
@@ -128,8 +130,32 @@ jobs:
 Use the same pattern for the other reusable workflows:
 
 - Pass `owner`, `repo`, and `issue_number` from the event payload.
+- Pass `pull_number` from the pull request payload for PR review queue automation.
 - Pass `project_owner: iOPSPro` and `project_number: 5` unless the repository uses a different project.
 - Pass `secrets.PROJECT_TOKEN` as `project_token` for workflows that read or write Project V2 data.
+
+Example caller for Dylan Richard PR review queue automation:
+
+```yaml
+name: Sync PR to DR review queue
+
+on:
+  pull_request:
+    types: [labeled, reopened, ready_for_review]
+
+jobs:
+  sync-dr-review:
+    if: ${{ github.event.pull_request.state == 'open' && contains(github.event.pull_request.labels.*.name, 'ready-for-dr-review') }}
+    uses: iOPSPro/.github/.github/workflows/sync-pr-delivery-board-for-review.yml@main
+    with:
+      owner: ${{ github.repository_owner }}
+      repo: ${{ github.event.repository.name }}
+      pull_number: ${{ github.event.pull_request.number }}
+      project_owner: iOPSPro
+      project_number: 5
+    secrets:
+      project_token: ${{ secrets.PROJECT_TOKEN }}
+```
 
 ## Testing Child Issues
 

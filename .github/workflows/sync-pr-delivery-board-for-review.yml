@@ -1,0 +1,537 @@
+name: Sync PR Delivery Board for review (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        description: Organization or user that owns the repository containing the pull request
+        required: true
+        type: string
+      repo:
+        description: Repository name containing the pull request
+        required: true
+        type: string
+      pull_number:
+        description: Pull request number to update
+        required: true
+        type: number
+      project_owner:
+        description: Organization or user that owns the Project V2
+        required: false
+        default: iOPSPro
+        type: string
+      project_number:
+        description: Project V2 number (e.g., 5 for iOPSPro/5)
+        required: false
+        default: 5
+        type: number
+      review_label:
+        description: Label that triggers review board automation
+        required: false
+        default: ready-for-dr-review
+        type: string
+      reviewer_login:
+        description: GitHub username to assign and request as reviewer
+        required: false
+        default: drichard1989
+        type: string
+      assign_reviewer_as_assignee:
+        description: Also assign the reviewer as a PR assignee
+        required: false
+        default: true
+        type: boolean
+      request_pull_request_review:
+        description: Request a pull request review from reviewer_login
+        required: false
+        default: true
+        type: boolean
+      iteration_field_name:
+        description: Primary Project Iteration field name
+        required: false
+        default: Iteration
+        type: string
+      secondary_iteration_field_name:
+        description: Secondary Project Iteration field name
+        required: false
+        default: 60 Day Block
+        type: string
+      status_field_name:
+        description: Project single-select Status field name
+        required: false
+        default: Status
+        type: string
+      status_option_name:
+        description: Project Status option to set after adding the PR
+        required: false
+        default: In progress
+        type: string
+    secrets:
+      project_token:
+        description: Token with access to read/write PRs, labels, reviewers, and Project V2 fields
+        required: true
+
+jobs:
+  sync_pr_delivery_board:
+    name: Sync PR to Delivery Board review queue
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Assign reviewer and sync project fields
+        uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_PULL_NUMBER: ${{ inputs.pull_number }}
+          INPUT_PROJECT_OWNER: ${{ inputs.project_owner }}
+          INPUT_PROJECT_NUMBER: ${{ inputs.project_number }}
+          INPUT_REVIEW_LABEL: ${{ inputs.review_label }}
+          INPUT_REVIEWER_LOGIN: ${{ inputs.reviewer_login }}
+          INPUT_ASSIGN_REVIEWER_AS_ASSIGNEE: ${{ inputs.assign_reviewer_as_assignee }}
+          INPUT_REQUEST_PULL_REQUEST_REVIEW: ${{ inputs.request_pull_request_review }}
+          INPUT_ITERATION_FIELD_NAME: ${{ inputs.iteration_field_name }}
+          INPUT_SECONDARY_ITERATION_FIELD_NAME: ${{ inputs.secondary_iteration_field_name }}
+          INPUT_STATUS_FIELD_NAME: ${{ inputs.status_field_name }}
+          INPUT_STATUS_OPTION_NAME: ${{ inputs.status_option_name }}
+        with:
+          github-token: ${{ secrets.project_token }}
+          script: |
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const pullNumber = Number(process.env.INPUT_PULL_NUMBER);
+            const projectOwner = process.env.INPUT_PROJECT_OWNER;
+            const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER);
+            const reviewLabel = (process.env.INPUT_REVIEW_LABEL || 'ready-for-dr-review').trim();
+            const reviewerLogin = (process.env.INPUT_REVIEWER_LOGIN || 'drichard1989').trim();
+            const assignReviewerAsAssignee = process.env.INPUT_ASSIGN_REVIEWER_AS_ASSIGNEE === 'true';
+            const requestPullRequestReview = process.env.INPUT_REQUEST_PULL_REQUEST_REVIEW === 'true';
+            const primaryIterationFieldName = (process.env.INPUT_ITERATION_FIELD_NAME || 'Iteration').trim();
+            const secondaryIterationFieldName = (process.env.INPUT_SECONDARY_ITERATION_FIELD_NAME || '60 Day Block').trim();
+            const statusFieldName = (process.env.INPUT_STATUS_FIELD_NAME || 'Status').trim();
+            const statusOptionName = (process.env.INPUT_STATUS_OPTION_NAME || 'In progress').trim();
+
+            const normalizeName = (value) => String(value || '').trim().toLowerCase();
+            const todayIso = new Date().toISOString().slice(0, 10);
+
+            const { data: pullRequest } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: pullNumber
+            });
+
+            if (pullRequest.state !== 'open') {
+              core.info(`PR #${pullNumber} is ${pullRequest.state}. Skipping.`);
+              return;
+            }
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number: pullNumber
+            });
+
+            const labels = (issue.labels || [])
+              .map(label => typeof label === 'string' ? label : label.name)
+              .filter(Boolean);
+            const normalizedLabels = labels.map(normalizeName);
+
+            core.info(`Current labels on PR #${pullNumber}: ${labels.join(', ') || '(none)'}`);
+
+            if (!normalizedLabels.includes(normalizeName(reviewLabel))) {
+              core.info(`Label "${reviewLabel}" not present on PR #${pullNumber}. Skipping.`);
+              return;
+            }
+
+            if (!pullRequest.node_id) {
+              throw new Error(`PR #${pullNumber} has no node_id; cannot use Projects V2 GraphQL mutations.`);
+            }
+
+            if (reviewerLogin && assignReviewerAsAssignee) {
+              const currentAssignees = new Set(
+                (issue.assignees || []).map(assignee => normalizeName(assignee.login)).filter(Boolean)
+              );
+
+              if (!currentAssignees.has(normalizeName(reviewerLogin))) {
+                await github.rest.issues.addAssignees({
+                  owner,
+                  repo,
+                  issue_number: pullNumber,
+                  assignees: [reviewerLogin]
+                });
+                core.info(`Assigned ${reviewerLogin} to PR #${pullNumber}.`);
+              } else {
+                core.info(`${reviewerLogin} is already assigned to PR #${pullNumber}.`);
+              }
+            }
+
+            if (reviewerLogin && requestPullRequestReview) {
+              const authorLogin = pullRequest.user?.login || '';
+
+              if (normalizeName(authorLogin) === normalizeName(reviewerLogin)) {
+                core.info(`Skipping review request because ${reviewerLogin} opened PR #${pullNumber}.`);
+              } else {
+                const requestedReviewers = new Set(
+                  (pullRequest.requested_reviewers || []).map(reviewer => normalizeName(reviewer.login)).filter(Boolean)
+                );
+
+                if (!requestedReviewers.has(normalizeName(reviewerLogin))) {
+                  try {
+                    await github.rest.pulls.requestReviewers({
+                      owner,
+                      repo,
+                      pull_number: pullNumber,
+                      reviewers: [reviewerLogin]
+                    });
+                    core.info(`Requested review from ${reviewerLogin} for PR #${pullNumber}.`);
+                  } catch (error) {
+                    if (error?.status === 422) {
+                      core.warning(`Could not request ${reviewerLogin} as reviewer for PR #${pullNumber}: ${error.message}`);
+                    } else {
+                      throw error;
+                    }
+                  }
+                } else {
+                  core.info(`${reviewerLogin} is already requested as a reviewer for PR #${pullNumber}.`);
+                }
+              }
+            }
+
+            const queryProjectForOrg = `
+              query($login: String!, $number: Int!, $cursor: String) {
+                organization(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        ... on ProjectV2IterationField {
+                          id
+                          name
+                          configuration {
+                            iterations {
+                              id
+                              title
+                              startDate
+                              duration
+                            }
+                            completedIterations {
+                              id
+                              title
+                              startDate
+                              duration
+                            }
+                          }
+                        }
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
+                    items(first: 100, after: $cursor) {
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
+                      nodes {
+                        id
+                        content {
+                          ... on PullRequest {
+                            id
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const queryProjectForUser = `
+              query($login: String!, $number: Int!, $cursor: String) {
+                user(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        ... on ProjectV2IterationField {
+                          id
+                          name
+                          configuration {
+                            iterations {
+                              id
+                              title
+                              startDate
+                              duration
+                            }
+                            completedIterations {
+                              id
+                              title
+                              startDate
+                              duration
+                            }
+                          }
+                        }
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
+                    items(first: 100, after: $cursor) {
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
+                      nodes {
+                        id
+                        content {
+                          ... on PullRequest {
+                            id
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const getProjectPage = async (cursor = null) => {
+              try {
+                const orgResult = await github.graphql(queryProjectForOrg, {
+                  login: projectOwner,
+                  number: projectNumber,
+                  cursor
+                });
+                const orgProject = orgResult?.organization?.projectV2;
+                if (orgProject) return orgProject;
+              } catch (error) {
+                // Ignore and try user lookup next.
+              }
+
+              const userResult = await github.graphql(queryProjectForUser, {
+                login: projectOwner,
+                number: projectNumber,
+                cursor
+              });
+              const userProject = userResult?.user?.projectV2;
+              if (userProject) return userProject;
+
+              throw new Error(`Project not found: ${projectOwner}/${projectNumber}`);
+            };
+
+            const firstPage = await getProjectPage(null);
+            const projectId = firstPage.id;
+            const projectTitle = firstPage.title;
+            const fields = (firstPage.fields?.nodes || []).filter(Boolean);
+            const availableIterationFieldNames = fields
+              .filter(field => field.configuration?.iterations || field.configuration?.completedIterations)
+              .map(field => field.name)
+              .filter(Boolean);
+
+            const findFieldByName = (fieldName) =>
+              fields.find(field => normalizeName(field.name) === normalizeName(fieldName));
+
+            const toDateUtc = (isoDate) => new Date(`${isoDate}T00:00:00Z`);
+            const addDaysUtc = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+            const todayDate = toDateUtc(todayIso);
+
+            const findCurrentIterationForField = (field, fieldName) => {
+              const allIterations = [
+                ...(field.configuration?.iterations || []),
+                ...(field.configuration?.completedIterations || [])
+              ].filter(Boolean);
+
+              const uniqueById = new Map(allIterations.map(iteration => [iteration.id, iteration]));
+              const iterations = [...uniqueById.values()].sort((a, b) =>
+                String(a.startDate).localeCompare(String(b.startDate))
+              );
+
+              if (iterations.length === 0) {
+                throw new Error(`No iterations found in field "${fieldName}" on project "${projectTitle}".`);
+              }
+
+              const currentIteration = iterations.find(iteration => {
+                if (!iteration.startDate || !iteration.duration) return false;
+                const start = toDateUtc(iteration.startDate);
+                const end = addDaysUtc(start, iteration.duration);
+                return todayDate >= start && todayDate < end;
+              });
+
+              if (!currentIteration) {
+                const oldest = iterations[0];
+                const newest = iterations[iterations.length - 1];
+                throw new Error(
+                  `No current iteration matched for field "${fieldName}" on ${todayIso}. Iterations range from ${oldest.startDate} to ${newest.startDate}.`
+                );
+              }
+
+              return currentIteration;
+            };
+
+            const fieldsToSync = [];
+            const primaryIterationField = findFieldByName(primaryIterationFieldName);
+
+            if (!primaryIterationField) {
+              throw new Error(
+                `Iteration field "${primaryIterationFieldName}" not found on project "${projectTitle}". Available iteration fields: ${availableIterationFieldNames.join(', ')}`
+              );
+            }
+
+            fieldsToSync.push({
+              fieldName: primaryIterationFieldName,
+              fieldId: primaryIterationField.id,
+              iteration: findCurrentIterationForField(primaryIterationField, primaryIterationFieldName)
+            });
+
+            const secondaryIterationField = findFieldByName(secondaryIterationFieldName);
+            if (secondaryIterationField) {
+              fieldsToSync.push({
+                fieldName: secondaryIterationFieldName,
+                fieldId: secondaryIterationField.id,
+                iteration: findCurrentIterationForField(secondaryIterationField, secondaryIterationFieldName)
+              });
+            } else {
+              core.info(`Secondary iteration field "${secondaryIterationFieldName}" not found on project "${projectTitle}". Skipping it.`);
+            }
+
+            let itemId =
+              (firstPage.items?.nodes || []).find(item => item?.content?.id === pullRequest.node_id)?.id || null;
+            let hasNextPage = firstPage.items?.pageInfo?.hasNextPage || false;
+            let cursor = firstPage.items?.pageInfo?.endCursor || null;
+
+            while (!itemId && hasNextPage) {
+              const nextPage = await getProjectPage(cursor);
+              itemId =
+                (nextPage.items?.nodes || []).find(item => item?.content?.id === pullRequest.node_id)?.id || null;
+              hasNextPage = nextPage.items?.pageInfo?.hasNextPage || false;
+              cursor = nextPage.items?.pageInfo?.endCursor || null;
+            }
+
+            if (!itemId) {
+              const addToProjectMutation = `
+                mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                    item {
+                      id
+                    }
+                  }
+                }
+              `;
+
+              const addResult = await github.graphql(addToProjectMutation, {
+                projectId,
+                contentId: pullRequest.node_id
+              });
+
+              itemId = addResult?.addProjectV2ItemById?.item?.id || null;
+              core.info(`Added PR #${pullNumber} to project "${projectTitle}".`);
+            } else {
+              core.info(`PR #${pullNumber} is already in project "${projectTitle}".`);
+            }
+
+            if (!itemId) {
+              throw new Error(`Failed to locate or create Project item for PR #${pullNumber} in ${projectOwner}/${projectNumber}.`);
+            }
+
+            const updateIterationMutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $iterationId: String!) {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { iterationId: $iterationId }
+                  }
+                ) {
+                  projectV2Item {
+                    id
+                  }
+                }
+              }
+            `;
+
+            for (const fieldToSync of fieldsToSync) {
+              await github.graphql(updateIterationMutation, {
+                projectId,
+                itemId,
+                fieldId: fieldToSync.fieldId,
+                iterationId: fieldToSync.iteration.id
+              });
+
+              core.info(`Set field "${fieldToSync.fieldName}" to "${fieldToSync.iteration.title}" for PR #${pullNumber}.`);
+            }
+
+            const statusField = findFieldByName(statusFieldName);
+            if (statusField && statusOptionName) {
+              const statusOption = (statusField.options || [])
+                .find(option => normalizeName(option.name) === normalizeName(statusOptionName));
+
+              if (statusOption) {
+                const updateSingleSelectMutation = `
+                  mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                    updateProjectV2ItemFieldValue(
+                      input: {
+                        projectId: $projectId
+                        itemId: $itemId
+                        fieldId: $fieldId
+                        value: { singleSelectOptionId: $optionId }
+                      }
+                    ) {
+                      projectV2Item {
+                        id
+                      }
+                    }
+                  }
+                `;
+
+                await github.graphql(updateSingleSelectMutation, {
+                  projectId,
+                  itemId,
+                  fieldId: statusField.id,
+                  optionId: statusOption.id
+                });
+
+                core.info(`Set field "${statusFieldName}" to "${statusOptionName}" for PR #${pullNumber}.`);
+              } else {
+                core.warning(`Status option "${statusOptionName}" not found in field "${statusFieldName}" on project "${projectTitle}".`);
+              }
+            } else if (statusOptionName) {
+              core.warning(`Status field "${statusFieldName}" not found on project "${projectTitle}".`);
+            }
+
+            core.info(`Finished Delivery Board review sync for ${owner}/${repo}#${pullNumber}.`);
+
+# Example per-repo caller workflow:
+#
+# name: Sync PR to DR review queue
+#
+# on:
+#   pull_request:
+#     types: [labeled, reopened, ready_for_review]
+#
+# jobs:
+#   call-reusable-worker:
+#     if: ${{ github.event.pull_request.state == 'open' && contains(github.event.pull_request.labels.*.name, 'ready-for-dr-review') }}
+#     uses: iOPSPro/.github/.github/workflows/sync-pr-delivery-board-for-review.yml@main
+#     with:
+#       owner: ${{ github.repository_owner }}
+#       repo: ${{ github.event.repository.name }}
+#       pull_number: ${{ github.event.pull_request.number }}
+#       project_owner: iOPSPro
+#       project_number: 5
+#     secrets:
+#       project_token: ${{ secrets.PROJECT_TOKEN }}

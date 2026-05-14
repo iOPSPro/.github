@@ -1,6 +1,6 @@
 # iOPSPro GitHub Defaults
 
-Organization-wide default GitHub configuration for iOPSPro repositories. This repository currently standardizes issue intake and reusable Project V2 automation for issues, testing sub-issues, iteration assignment, and environment assignment.
+Organization-wide default GitHub configuration for iOPSPro repositories. This repository currently standardizes issue intake and reusable Project V2 automation for issues, pull requests, testing sub-issues, iteration assignment, and environment assignment.
 
 ## What This Repository Provides
 
@@ -46,6 +46,7 @@ The workflows use labels as simple signals between issue forms, per-repository c
 | `testing` | Issue is a testing or QA validation issue. |
 | `testing-created` | Parent issue already had an automation-created testing child issue. Prevents duplicate child creation. |
 | `assign-current-iteration` | Issue should be assigned to the current Project V2 iteration. Removed after successful iteration sync. |
+| `ready-for-dr-review` | Pull request is ready for Dylan Richard review and should enter the Delivery Board review queue. |
 
 ## Project Field Contracts
 
@@ -56,7 +57,7 @@ Expected fields:
 - `Iteration`: primary Project V2 iteration field.
 - `60 Day Block`: secondary Project V2 iteration field. Some workflows skip this field if it is absent; the iteration sync workflow requires only `Iteration`.
 - `Environment`: single-select field with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`.
-- `Status`: single-select field used by the testing sub-issue status workflow. It must include an `In progress` option for that workflow to update items.
+- `Status`: single-select field used by PR and testing sub-issue status workflows. It must include `In progress`.
 
 Workflows use GraphQL Project V2 APIs and require a token with access to read and write the relevant project fields. Caller repositories should pass that token as `project_token`, usually from `secrets.PROJECT_TOKEN`.
 
@@ -72,6 +73,7 @@ Workflows in this repository are reusable workflow scaffolds. They do not automa
 | `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parents labeled `needs-testing`; copies parent assignees; attaches it as a sub-issue; adds/copies project fields; labels the parent `testing-created`; comments with the child issue number. | `issues.opened` or `issues.labeled`, gated by `needs-testing` |
 | `.github/workflows/copy-parent-project-fields-to-test-child.yml` | For manually created testing child issues, finds the parent via the sub-issues API, copies parent assignees, adds the child to the project if needed, and copies `Iteration`, `60 Day Block`, and `Environment`. | `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch` |
 | `.github/workflows/move-testing-subissues-to-testing.yml` | Finds sub-issues with `Testing:` in the title and moves their Project V2 `Status` to `In progress`. | Parent issue lifecycle events, commonly after parent issue closure or readiness transitions |
+| `.github/workflows/sync-pr-delivery-board-for-review.yml` | Requests review from the configured reviewer, optionally assigns the reviewer, adds the PR to the Delivery Board, sets current `Iteration` and `60 Day Block`, and sets `Status` to `In progress`. Defaults to `ready-for-dr-review` and `drichard1989`. | `pull_request.labeled`, gated by `ready-for-dr-review` |
 
 The workflow files include commented example caller workflows at the bottom where applicable.
 
@@ -106,6 +108,7 @@ Participating repositories should add caller workflows for the pieces they need:
 - Create testing sub-issues when `needs-testing` is present.
 - Copy parent fields for manually created testing children.
 - Move testing sub-issues to `In progress` when the parent workflow needs that handoff.
+- Sync PRs to the Delivery Board review queue when `ready-for-dr-review` is applied.
 
 Caller workflows should pass:
 
@@ -115,6 +118,29 @@ Caller workflows should pass:
 - `project_owner: iOPSPro`
 - `project_number: 5`
 - `project_token: ${{ secrets.PROJECT_TOKEN }}`
+
+Example caller for Dylan Richard PR review queue automation:
+
+```yaml
+name: Sync PR to DR review queue
+
+on:
+  pull_request:
+    types: [labeled, reopened, ready_for_review]
+
+jobs:
+  sync-dr-review:
+    if: ${{ github.event.pull_request.state == 'open' && contains(github.event.pull_request.labels.*.name, 'ready-for-dr-review') }}
+    uses: iOPSPro/.github/.github/workflows/sync-pr-delivery-board-for-review.yml@main
+    with:
+      owner: ${{ github.repository_owner }}
+      repo: ${{ github.event.repository.name }}
+      pull_number: ${{ github.event.pull_request.number }}
+      project_owner: iOPSPro
+      project_number: 5
+    secrets:
+      project_token: ${{ secrets.PROJECT_TOKEN }}
+```
 
 ## Maintenance Notes
 
