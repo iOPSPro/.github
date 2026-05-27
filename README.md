@@ -56,7 +56,7 @@ Expected Organization Issue Fields:
 
 - `Customer`: single-select issue-owned metadata.
 - `Effort`: number issue-owned metadata.
-- `Environment`: single-select issue-owned metadata with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`.
+- `Environment`: single-select issue-owned metadata with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`. The current iOPSPro numeric Issue Field ID is `42612370`.
 - `Priority`: single-select issue-owned metadata with options `A1`, `A2`, `A3`, `B`, and `C`.
 - `Site`: single-select issue-owned metadata.
 - `Start Date`: date issue-owned metadata.
@@ -71,7 +71,7 @@ Expected Project V2 fields on the default project `iOPSPro/5`:
 - `Status`: single-select field used by PR and testing sub-issue status workflows. It must include `In progress`.
 - `Sub-issues progress`: GitHub-managed project field.
 
-Workflows use GraphQL Project V2 APIs for board state and GraphQL Issue Field APIs for durable issue metadata. Caller repositories should pass a token with access to read and write the relevant project and issue fields as `project_token`, usually from `secrets.PROJECT_TOKEN`.
+Workflows use GraphQL Project V2 APIs for board state and GitHub Issue Field value APIs for durable issue metadata. Caller repositories should pass a token with access to read/write the relevant project fields and write issue field values as `project_token`, usually from `secrets.PROJECT_TOKEN`.
 
 ## Reusable Workflows
 
@@ -129,6 +129,7 @@ Caller workflows should pass:
 - `issue_number` from the issue event or `workflow_dispatch` input
 - `project_owner: iOPSPro`
 - `project_number: 5`
+- `issue_field_id: "42612370"` when syncing the `Environment` Issue Field
 - `project_token: ${{ secrets.PROJECT_TOKEN }}`
 
 Example caller for Dylan Richard PR review queue automation:

@@ -50,6 +50,11 @@ on:
         required: false
         default: Environment
         type: string
+      issue_environment_field_id:
+        description: Numeric Organization Issue Field ID for Environment
+        required: false
+        default: "42612370"
+        type: string
     secrets:
       project_token:
         description: Token with access to read/write issues, Project V2 fields, and Organization Issue Fields
@@ -77,6 +82,7 @@ jobs:
           INPUT_SECONDARY_FIELD_NAME: ${{ inputs.secondary_iteration_field_name }}
           INPUT_APPLICATION_VERSION_FIELD_NAME: ${{ inputs.application_version_field_name }}
           INPUT_ISSUE_ENVIRONMENT_FIELD_NAME: ${{ inputs.issue_environment_field_name }}
+          INPUT_ISSUE_ENVIRONMENT_FIELD_ID: ${{ inputs.issue_environment_field_id }}
         with:
           github-token: ${{ secrets.project_token }}
           script: |
@@ -93,6 +99,11 @@ jobs:
               process.env.INPUT_APPLICATION_VERSION_FIELD_NAME ||
               'Environment'
             ).trim();
+            const issueEnvironmentFieldId = Number(process.env.INPUT_ISSUE_ENVIRONMENT_FIELD_ID || 0);
+
+            if (!issueEnvironmentFieldId) {
+              throw new Error(`Missing numeric Issue Field ID for "${issueEnvironmentFieldName}" on organization "${projectOwner}".`);
+            }
 
             const { data: childIssue } = await github.rest.issues.get({
               owner,
@@ -388,107 +399,48 @@ jobs:
               }
             }
 
-            const queryIssueFieldValues = `
-              query($parentId: ID!, $fieldOwner: String!) {
-                parent: node(id: $parentId) {
-                  ... on Issue {
-                    issueFieldValues(first: 50) {
-                      nodes {
-                        ... on IssueFieldSingleSelectValue {
-                          name
-                          value
-                          field {
-                            ... on IssueFieldSingleSelect {
-                              id
-                              name
-                              options {
-                                id
-                                name
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-                organization(login: $fieldOwner) {
-                  issueFields(first: 100) {
-                    nodes {
-                      ... on IssueFieldSingleSelect {
-                        id
-                        name
-                        options {
-                          id
-                          name
-                        }
-                      }
-                    }
-                  }
+            const parentIssueFieldValues = await github.request(
+              'GET /repos/{owner}/{repo}/issues/{issue_number}/issue-field-values',
+              {
+                owner,
+                repo,
+                issue_number: parentIssue.number,
+                per_page: 100,
+                headers: {
+                  'X-GitHub-Api-Version': '2026-03-10'
                 }
               }
-            `;
+            );
 
-            const issueFieldResult = await github.graphql(queryIssueFieldValues, {
-              parentId: parentIssueNodeId,
-              fieldOwner: projectOwner
-            });
+            const parentEnvironmentValue = (parentIssueFieldValues.data || [])
+              .find(value => Number(value.issue_field_id) === issueEnvironmentFieldId);
 
-            const normalizedIssueEnvironmentFieldName = issueEnvironmentFieldName.toLowerCase();
-            const parentEnvironmentValue = (issueFieldResult?.parent?.issueFieldValues?.nodes || [])
-              .filter(Boolean)
-              .find(value => value?.field?.name?.trim().toLowerCase() === normalizedIssueEnvironmentFieldName);
+            const parentEnvironmentName =
+              parentEnvironmentValue?.single_select_option?.name ||
+              parentEnvironmentValue?.value ||
+              '';
 
-            if (!parentEnvironmentValue?.name) {
+            if (!parentEnvironmentName) {
               core.info(`No parent Issue Field "${issueEnvironmentFieldName}" value found to copy.`);
               return;
             }
 
-            const issueField = (issueFieldResult?.organization?.issueFields?.nodes || [])
-              .filter(Boolean)
-              .find(field => field?.name?.trim().toLowerCase() === normalizedIssueEnvironmentFieldName);
-
-            if (!issueField) {
-              core.info(`Issue Field "${issueEnvironmentFieldName}" is not available on organization "${projectOwner}". Skipping.`);
-              return;
-            }
-
-            const option = (issueField.options || []).find(
-              candidate => (candidate.name || '').trim().toLowerCase() === parentEnvironmentValue.name.trim().toLowerCase()
-            );
-
-            if (!option) {
-              core.info(`Option "${parentEnvironmentValue.name}" is not available for Issue Field "${issueEnvironmentFieldName}". Skipping.`);
-              return;
-            }
-
-            const setIssueFieldMutation = `
-              mutation($issueId: ID!, $fieldId: ID!, $optionId: ID!) {
-                setIssueFieldValue(
-                  input: {
-                    issueId: $issueId
-                    issueFields: [
-                      {
-                        fieldId: $fieldId
-                        singleSelectOptionId: $optionId
-                      }
-                    ]
-                  }
-                ) {
-                  issue {
-                    id
-                  }
+            await github.request('POST /repos/{owner}/{repo}/issues/{issue_number}/issue-field-values', {
+              owner,
+              repo,
+              issue_number: issueNumber,
+              issue_field_values: [
+                {
+                  field_id: issueEnvironmentFieldId,
+                  value: parentEnvironmentName
                 }
+              ],
+              headers: {
+                'X-GitHub-Api-Version': '2026-03-10'
               }
-            `;
-
-            await github.graphql(setIssueFieldMutation, {
-              issueId: childIssueNodeId,
-              fieldId: issueField.id,
-              optionId: option.id
             });
 
-            core.info(`Copied Issue Field "${issueField.name}" = "${option.name}" from parent #${parentIssue.number} to child #${issueNumber}.`);
+            core.info(`Copied Issue Field "${issueEnvironmentFieldName}" = "${parentEnvironmentName}" from parent #${parentIssue.number} to child #${issueNumber}.`);
 # Example per-repo caller workflow:
 #
 # name: Copy parent fields to test child
