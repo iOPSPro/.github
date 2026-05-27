@@ -1,4 +1,4 @@
-name: Copy parent project fields to test child (reusable)
+name: Copy parent metadata to test child (reusable)
 
 on:
   workflow_call:
@@ -41,25 +41,30 @@ on:
         default: 60 Day Block
         type: string
       application_version_field_name:
-        description: Project single-select Environment field name to copy from parent
+        description: Deprecated alias for issue_environment_field_name
+        required: false
+        default: Environment
+        type: string
+      issue_environment_field_name:
+        description: Organization Issue Field Environment name to copy from parent
         required: false
         default: Environment
         type: string
     secrets:
       project_token:
-        description: Token with access to read/write issues and Project V2 fields
+        description: Token with access to read/write issues, Project V2 fields, and Organization Issue Fields
         required: true
 
 jobs:
   copy_parent_project_fields:
-    name: Copy parent fields to testing child
+    name: Copy parent metadata to testing child
     runs-on: ubuntu-latest
     permissions:
       contents: read
       issues: write
 
     steps:
-      - name: Copy matching project fields
+      - name: Copy matching parent metadata
         uses: actions/github-script@v8
         env:
           INPUT_OWNER: ${{ inputs.owner }}
@@ -71,6 +76,7 @@ jobs:
           INPUT_PRIMARY_FIELD_NAME: ${{ inputs.primary_iteration_field_name }}
           INPUT_SECONDARY_FIELD_NAME: ${{ inputs.secondary_iteration_field_name }}
           INPUT_APPLICATION_VERSION_FIELD_NAME: ${{ inputs.application_version_field_name }}
+          INPUT_ISSUE_ENVIRONMENT_FIELD_NAME: ${{ inputs.issue_environment_field_name }}
         with:
           github-token: ${{ secrets.project_token }}
           script: |
@@ -82,7 +88,11 @@ jobs:
             const testingLabel = (process.env.INPUT_TESTING_LABEL || 'testing').trim();
             const primaryFieldName = (process.env.INPUT_PRIMARY_FIELD_NAME || 'Iteration').trim();
             const secondaryFieldName = (process.env.INPUT_SECONDARY_FIELD_NAME || '60 Day Block').trim();
-            const applicationVersionFieldName = (process.env.INPUT_APPLICATION_VERSION_FIELD_NAME || 'Environment').trim();
+            const issueEnvironmentFieldName = (
+              process.env.INPUT_ISSUE_ENVIRONMENT_FIELD_NAME ||
+              process.env.INPUT_APPLICATION_VERSION_FIELD_NAME ||
+              'Environment'
+            ).trim();
 
             const { data: childIssue } = await github.rest.issues.get({
               owner,
@@ -125,7 +135,7 @@ jobs:
             const childIssueNodeId = childIssue.node_id;
 
             if (!parentIssueNodeId || !childIssueNodeId) {
-              throw new Error(`Missing node_id for parent or child issue; cannot copy Project V2 fields.`);
+              throw new Error(`Missing node_id for parent or child issue; cannot copy Project V2 fields or Issue Fields.`);
             }
 
             const parentAssignees = (parentIssue.assignees || []).map(assignee => assignee.login).filter(Boolean);
@@ -155,14 +165,6 @@ jobs:
                           id
                           name
                         }
-                        ... on ProjectV2SingleSelectField {
-                          id
-                          name
-                          options {
-                            id
-                            name
-                          }
-                        }
                       }
                     }
                     items(first: 100, after: $cursor) {
@@ -188,16 +190,6 @@ jobs:
                               }
                               iterationId
                               title
-                            }
-                            ... on ProjectV2ItemFieldSingleSelectValue {
-                              field {
-                                ... on ProjectV2SingleSelectField {
-                                  id
-                                  name
-                                }
-                              }
-                              optionId
-                              name
                             }
                           }
                         }
@@ -220,14 +212,6 @@ jobs:
                           id
                           name
                         }
-                        ... on ProjectV2SingleSelectField {
-                          id
-                          name
-                          options {
-                            id
-                            name
-                          }
-                        }
                       }
                     }
                     items(first: 100, after: $cursor) {
@@ -253,16 +237,6 @@ jobs:
                               }
                               iterationId
                               title
-                            }
-                            ... on ProjectV2ItemFieldSingleSelectValue {
-                              field {
-                                ... on ProjectV2SingleSelectField {
-                                  id
-                                  name
-                                }
-                              }
-                              optionId
-                              name
                             }
                           }
                         }
@@ -331,8 +305,7 @@ jobs:
             }
 
             if (!parentItem) {
-              core.info(`Parent issue #${parentIssue.number} is not present in project "${projectTitle}". Skipping.`);
-              return;
+              core.info(`Parent issue #${parentIssue.number} is not present in project "${projectTitle}". Skipping project field copy.`);
             }
 
             if (!childItem) {
@@ -364,101 +337,158 @@ jobs:
 
             const fieldNamesToCopy = [primaryFieldName, secondaryFieldName].filter(Boolean);
             const desiredIterationFieldNames = fieldNamesToCopy.map(name => name.toLowerCase());
-            const parentIterationValues = (parentItem.fieldValues?.nodes || [])
-              .filter(Boolean)
-              .filter(value => {
-                const fieldName = value?.field?.name?.trim().toLowerCase();
-                return fieldName && desiredIterationFieldNames.includes(fieldName);
-              });
+            if (parentItem) {
+              const parentIterationValues = (parentItem.fieldValues?.nodes || [])
+                .filter(Boolean)
+                .filter(value => {
+                  const fieldName = value?.field?.name?.trim().toLowerCase();
+                  return fieldName && desiredIterationFieldNames.includes(fieldName);
+                });
 
-            const updateIterationMutation = `
-              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $iterationId: String!) {
-                updateProjectV2ItemFieldValue(
-                  input: {
-                    projectId: $projectId
-                    itemId: $itemId
-                    fieldId: $fieldId
-                    value: { iterationId: $iterationId }
+              const updateIterationMutation = `
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $iterationId: String!) {
+                  updateProjectV2ItemFieldValue(
+                    input: {
+                      projectId: $projectId
+                      itemId: $itemId
+                      fieldId: $fieldId
+                      value: { iterationId: $iterationId }
+                    }
+                  ) {
+                    projectV2Item {
+                      id
+                    }
                   }
-                ) {
-                  projectV2Item {
-                    id
+                }
+              `;
+
+              for (const value of parentIterationValues) {
+                const parentFieldName = value?.field?.name?.trim();
+                const parentFieldId = value?.field?.id;
+                const parentIterationId = value?.iterationId;
+                const normalizedFieldName = parentFieldName?.toLowerCase();
+
+                if (!parentFieldName || !parentFieldId || !parentIterationId) {
+                  continue;
+                }
+
+                if (!availableFieldMap.has(normalizedFieldName)) {
+                  core.info(`Field "${parentFieldName}" is not available on project "${projectTitle}". Skipping.`);
+                  continue;
+                }
+
+                await github.graphql(updateIterationMutation, {
+                  projectId,
+                  itemId: childItem.id,
+                  fieldId: parentFieldId,
+                  iterationId: parentIterationId
+                });
+
+                core.info(`Copied "${parentFieldName}" = "${value.title}" from parent #${parentIssue.number} to child #${issueNumber}.`);
+              }
+            }
+
+            const queryIssueFieldValues = `
+              query($parentId: ID!, $fieldOwner: String!) {
+                parent: node(id: $parentId) {
+                  ... on Issue {
+                    issueFieldValues(first: 50) {
+                      nodes {
+                        ... on IssueFieldSingleSelectValue {
+                          name
+                          value
+                          field {
+                            ... on IssueFieldSingleSelect {
+                              id
+                              name
+                              options {
+                                id
+                                name
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                organization(login: $fieldOwner) {
+                  issueFields(first: 100) {
+                    nodes {
+                      ... on IssueFieldSingleSelect {
+                        id
+                        name
+                        options {
+                          id
+                          name
+                        }
+                      }
+                    }
                   }
                 }
               }
             `;
 
-            for (const value of parentIterationValues) {
-              const parentFieldName = value?.field?.name?.trim();
-              const parentFieldId = value?.field?.id;
-              const parentIterationId = value?.iterationId;
-              const normalizedFieldName = parentFieldName?.toLowerCase();
-
-              if (!parentFieldName || !parentFieldId || !parentIterationId) {
-                continue;
-              }
-
-              if (!availableFieldMap.has(normalizedFieldName)) {
-                core.info(`Field "${parentFieldName}" is not available on project "${projectTitle}". Skipping.`);
-                continue;
-              }
-
-              await github.graphql(updateIterationMutation, {
-                projectId,
-                itemId: childItem.id,
-                fieldId: parentFieldId,
-                iterationId: parentIterationId
-              });
-
-              core.info(`Copied "${parentFieldName}" = "${value.title}" from parent #${parentIssue.number} to child #${issueNumber}.`);
-            }
-
-            const normalizedApplicationVersionFieldName = applicationVersionFieldName.toLowerCase();
-            const parentApplicationVersionValue = (parentItem.fieldValues?.nodes || [])
-              .filter(Boolean)
-              .find(value => value?.field?.name?.trim().toLowerCase() === normalizedApplicationVersionFieldName);
-
-            if (!parentApplicationVersionValue?.optionId) {
-              core.info(`No parent "${applicationVersionFieldName}" value found to copy from project "${projectTitle}".`);
-              return;
-            }
-
-            const parentApplicationVersionFieldName = parentApplicationVersionValue.field.name.trim();
-            const parentApplicationVersionFieldId = parentApplicationVersionValue.field.id;
-
-            if (!availableFieldMap.has(normalizedApplicationVersionFieldName)) {
-              core.info(`Field "${parentApplicationVersionFieldName}" is not available on project "${projectTitle}". Skipping.`);
-              return;
-            }
-
-            const updateSingleSelectMutation = `
-              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
-                updateProjectV2ItemFieldValue(
-                  input: {
-                    projectId: $projectId
-                    itemId: $itemId
-                    fieldId: $fieldId
-                    value: { singleSelectOptionId: $optionId }
-                  }
-                ) {
-                  projectV2Item {
-                    id
-                  }
-                }
-              }
-            `;
-
-            await github.graphql(updateSingleSelectMutation, {
-              projectId,
-              itemId: childItem.id,
-              fieldId: parentApplicationVersionFieldId,
-              optionId: parentApplicationVersionValue.optionId
+            const issueFieldResult = await github.graphql(queryIssueFieldValues, {
+              parentId: parentIssueNodeId,
+              fieldOwner: projectOwner
             });
 
-            core.info(
-              `Copied "${parentApplicationVersionFieldName}" = "${parentApplicationVersionValue.name}" from parent #${parentIssue.number} to child #${issueNumber}.`
+            const normalizedIssueEnvironmentFieldName = issueEnvironmentFieldName.toLowerCase();
+            const parentEnvironmentValue = (issueFieldResult?.parent?.issueFieldValues?.nodes || [])
+              .filter(Boolean)
+              .find(value => value?.field?.name?.trim().toLowerCase() === normalizedIssueEnvironmentFieldName);
+
+            if (!parentEnvironmentValue?.name) {
+              core.info(`No parent Issue Field "${issueEnvironmentFieldName}" value found to copy.`);
+              return;
+            }
+
+            const issueField = (issueFieldResult?.organization?.issueFields?.nodes || [])
+              .filter(Boolean)
+              .find(field => field?.name?.trim().toLowerCase() === normalizedIssueEnvironmentFieldName);
+
+            if (!issueField) {
+              core.info(`Issue Field "${issueEnvironmentFieldName}" is not available on organization "${projectOwner}". Skipping.`);
+              return;
+            }
+
+            const option = (issueField.options || []).find(
+              candidate => (candidate.name || '').trim().toLowerCase() === parentEnvironmentValue.name.trim().toLowerCase()
             );
 
+            if (!option) {
+              core.info(`Option "${parentEnvironmentValue.name}" is not available for Issue Field "${issueEnvironmentFieldName}". Skipping.`);
+              return;
+            }
+
+            const setIssueFieldMutation = `
+              mutation($issueId: ID!, $fieldId: ID!, $optionId: ID!) {
+                setIssueFieldValue(
+                  input: {
+                    issueId: $issueId
+                    issueFields: [
+                      {
+                        fieldId: $fieldId
+                        singleSelectOptionId: $optionId
+                      }
+                    ]
+                  }
+                ) {
+                  issue {
+                    id
+                  }
+                }
+              }
+            `;
+
+            await github.graphql(setIssueFieldMutation, {
+              issueId: childIssueNodeId,
+              fieldId: issueField.id,
+              optionId: option.id
+            });
+
+            core.info(`Copied Issue Field "${issueField.name}" = "${option.name}" from parent #${parentIssue.number} to child #${issueNumber}.`);
 # Example per-repo caller workflow:
 #
 # name: Copy parent fields to test child

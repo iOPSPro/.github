@@ -1,5 +1,5 @@
 name: Testing
-description: Create a testing or QA validation task. If created as a sub-issue of another task, the project fields will automatically copy from the parent issue. 
+description: Create a testing or QA validation task. If created as a sub-issue of another task, planning metadata will automatically copy from the parent issue.
 title: "Testing: "
 type: Test
 labels:

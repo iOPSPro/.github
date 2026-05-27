@@ -10,7 +10,7 @@ This repository provides:
 
 - Issue forms in `.github/ISSUE_TEMPLATE/`
 - Reusable GitHub Actions workflows in `.github/workflows/`
-- Project V2 automation conventions for labels, iterations, environment fields, pull request review queues, and testing sub-issues
+- Issue Field and Project V2 automation conventions for labels, durable metadata, iterations, pull request review queues, and testing sub-issues
 
 It does not currently provide pull request templates, contribution guidelines, code of conduct files, or support policy files.
 
@@ -29,7 +29,7 @@ Blank issues are disabled. All issue forms add new issues to Project `iOPSPro/5`
 Shared form fields:
 
 - `Assign to current iteration?` is present on every form. A `Yes` answer is used by automation to add `assign-current-iteration`.
-- `Is there a specific environment this is for?` is present on every form and maps to the Project V2 `Environment` field.
+- `Is there a specific environment this is for?` is present on every form and maps to the Organization Issue Field `Environment`.
 - Supported environment values are `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`.
 - `Does this issue need testing?` is present on bug, feature, and work item forms. GitHub issue forms cannot apply labels conditionally from dropdown answers by themselves, so repositories need automation if they want this answer to add or remove `needs-testing`.
 
@@ -43,9 +43,9 @@ The workflows in `.github/workflows/` are reusable workflow building blocks. The
 | --- | --- | --- |
 | `.github/workflows/apply-issue-form-iteration-label.yml` | Reads `Assign to current iteration?` and adds `assign-current-iteration` when the answer is `Yes`. | `issues.opened`, `issues.edited` |
 | `.github/workflows/sync-project-iteration-from-label.yml` | Finds the current Project V2 iteration, sets `Iteration` and `60 Day Block`, then removes `assign-current-iteration`. | `issues.labeled` for `assign-current-iteration` |
-| `.github/workflows/sync-project-application-version-from-form.yml` | Reads the issue form environment answer and sets the Project V2 `Environment` field. | `issues.opened`, `issues.edited` |
-| `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parent issues labeled `needs-testing`; copies assignees and project fields; marks the parent with `testing-created`. | `issues.opened`, `issues.labeled` gated by `needs-testing` |
-| `.github/workflows/copy-parent-project-fields-to-test-child.yml` | For manually created testing child issues, finds the parent issue, copies assignees, adds the child to the project if needed, and copies project fields. | `issues.opened`, `issues.edited`, `issues.labeled`, or `workflow_dispatch` |
+| `.github/workflows/sync-project-application-version-from-form.yml` | Reads the issue form environment answer and sets the Organization Issue Field `Environment`. | `issues.opened`, `issues.edited` |
+| `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parent issues labeled `needs-testing`; copies assignees, Project V2 iteration fields, and Issue Field `Environment`; marks the parent with `testing-created`. | `issues.opened`, `issues.labeled` gated by `needs-testing` |
+| `.github/workflows/copy-parent-project-fields-to-test-child.yml` | For manually created testing child issues, finds the parent issue, copies assignees, adds the child to the project if needed, and copies Project V2 iteration fields plus Issue Field `Environment`. | `issues.opened`, `issues.edited`, `issues.labeled`, or `workflow_dispatch` |
 | `.github/workflows/move-testing-subissues-to-testing.yml` | Finds testing sub-issues and moves their Project V2 `Status` to `In progress`. | Parent issue lifecycle events |
 | `.github/workflows/sync-pr-delivery-board-for-review.yml` | Requests review from the configured reviewer, optionally assigns the reviewer, adds the PR to the Delivery Board, sets current `Iteration` and `60 Day Block`, and sets `Status` to `In progress`. Defaults to `ready-for-dr-review` and `drichard1989`. | `pull_request.labeled` gated by `ready-for-dr-review` |
 
@@ -62,16 +62,26 @@ These labels act as lightweight contracts between forms, caller workflows, and r
 | `assign-current-iteration` | Issue should be assigned to the current Project V2 iteration. Removed after successful sync. |
 | `ready-for-dr-review` | Pull request is ready for Dylan Richard review and should enter the Delivery Board review queue. |
 
-## Project V2 Requirements
+## Issue And Project Field Requirements
 
-The default project is `iOPSPro/5`. Workflows use GitHub GraphQL Project V2 APIs and require a token with access to read and write the target project fields.
+Durable planning metadata is stored as Organization Issue Fields so changes are visible in the issue timeline. Board and execution state remains in Project V2.
 
-Expected fields:
+Expected Organization Issue Fields:
+
+- `Customer`: single-select issue-owned metadata.
+- `Effort`: number issue-owned metadata.
+- `Environment`: single-select issue-owned metadata with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`.
+- `Priority`: single-select issue-owned metadata with options `A1`, `A2`, `A3`, `B`, and `C`.
+- `Site`: single-select issue-owned metadata.
+- `Start Date`: date issue-owned metadata.
+- `Target Date`: date issue-owned metadata.
+
+Expected Project V2 fields on the default project `iOPSPro/5`:
 
 - `Iteration`: primary Project V2 iteration field.
 - `60 Day Block`: secondary Project V2 iteration field used by copy/sync workflows where available.
-- `Environment`: single-select field with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`.
 - `Status`: single-select field used by PR and testing sub-issue automation. It must include `In progress`.
+- `Sub-issues progress`: GitHub-managed project field.
 
 Caller repositories typically pass the project token with:
 
@@ -132,7 +142,7 @@ Use the same pattern for the other reusable workflows:
 - Pass `owner`, `repo`, and `issue_number` from the event payload.
 - Pass `pull_number` from the pull request payload for PR review queue automation.
 - Pass `project_owner: iOPSPro` and `project_number: 5` unless the repository uses a different project.
-- Pass `secrets.PROJECT_TOKEN` as `project_token` for workflows that read or write Project V2 data.
+- Pass `secrets.PROJECT_TOKEN` as `project_token` for workflows that read or write Project V2 data or Organization Issue Fields.
 
 Example caller for Dylan Richard PR review queue automation:
 
@@ -167,21 +177,21 @@ Automation-created path:
 2. A caller workflow invokes `create-testing-subissue.yml`.
 3. The reusable workflow skips parents that already have `testing-created`.
 4. It creates `Testing: <parent title>` with label `testing` and type `Test`.
-5. It attaches the child as a sub-issue, copies assignees and project fields, labels the parent `testing-created`, and comments on the parent.
+5. It attaches the child as a sub-issue, copies assignees, Project V2 iteration fields, and Issue Field `Environment`, labels the parent `testing-created`, and comments on the parent.
 
 Manually created path:
 
 1. A user creates an issue from the `Testing` form.
 2. The issue is attached as a child issue of the parent.
 3. A caller workflow invokes `copy-parent-project-fields-to-test-child.yml`.
-4. The reusable workflow verifies the `testing` label, finds the parent through the sub-issues API, and copies assignees and project fields.
+4. The reusable workflow verifies the `testing` label, finds the parent through the sub-issues API, and copies assignees, Project V2 iteration fields, and Issue Field `Environment`.
 
 GitHub Actions does not expose a dedicated documented `issues` event for "issue became a sub-issue." For manually created testing children, use nearby triggers such as `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch`.
 
 ## Maintenance
 
 - Keep issue form labels stable. Several workflows parse rendered issue body headings such as `### Assign to current iteration?`.
-- Keep Project V2 field names and option names aligned with the defaults documented here.
+- Keep Issue Field and Project V2 field names and option names aligned with the defaults documented here.
 - Store only organization-safe, non-sensitive defaults in this repository.
 - Put repository-specific intake or automation in the target repository when it differs from these defaults.
 

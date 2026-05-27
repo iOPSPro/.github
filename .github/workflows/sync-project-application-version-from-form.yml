@@ -1,4 +1,4 @@
-name: Sync project environment from issue form (reusable)
+name: Sync issue environment from issue form (reusable)
 
 on:
   workflow_call:
@@ -16,15 +16,20 @@ on:
         required: true
         type: number
       project_owner:
-        description: Organization or user that owns the Project V2
+        description: Organization that owns the Issue Field. Defaults to the Project owner for backward compatibility.
         required: true
         type: string
       project_number:
-        description: Project V2 number (e.g., 5 for iOPSPro/5)
+        description: Deprecated. Kept for backward compatibility with existing callers.
         required: true
         type: number
       project_field_name:
-        description: Project single-select field name
+        description: Deprecated alias for issue_field_name
+        required: false
+        default: Environment
+        type: string
+      issue_field_name:
+        description: Organization Issue Field single-select name
         required: false
         default: Environment
         type: string
@@ -35,12 +40,12 @@ on:
         type: string
     secrets:
       project_token:
-        description: Token with access to read/write Project V2 fields
+        description: Token with access to read/write Organization Issue Fields
         required: true
 
 jobs:
   sync_application_version:
-    name: Set Project Environment from issue form
+    name: Set Issue Environment from issue form
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -54,8 +59,8 @@ jobs:
           INPUT_REPO: ${{ inputs.repo }}
           INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
           INPUT_PROJECT_OWNER: ${{ inputs.project_owner }}
-          INPUT_PROJECT_NUMBER: ${{ inputs.project_number }}
           INPUT_PROJECT_FIELD_NAME: ${{ inputs.project_field_name }}
+          INPUT_ISSUE_FIELD_NAME: ${{ inputs.issue_field_name }}
           INPUT_QUESTION_HEADING: ${{ inputs.question_heading }}
         with:
           github-token: ${{ secrets.project_token }}
@@ -63,9 +68,12 @@ jobs:
             const owner = process.env.INPUT_OWNER;
             const repo = process.env.INPUT_REPO;
             const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
-            const projectOwner = process.env.INPUT_PROJECT_OWNER;
-            const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER);
-            const fieldName = (process.env.INPUT_PROJECT_FIELD_NAME || 'Environment').trim();
+            const issueFieldOwner = (process.env.INPUT_PROJECT_OWNER || owner).trim();
+            const fieldName = (
+              process.env.INPUT_ISSUE_FIELD_NAME ||
+              process.env.INPUT_PROJECT_FIELD_NAME ||
+              'Environment'
+            ).trim();
             const heading = (process.env.INPUT_QUESTION_HEADING || 'Is there a specific environment this is for?').trim();
             const validResponses = new Set(['V1', 'V2', 'Backend', 'N/A', 'Both V1 and V2']);
 
@@ -108,38 +116,20 @@ jobs:
 
             const issueNodeId = issue.node_id;
             if (!issueNodeId) {
-              throw new Error(`Issue #${issue_number} has no node_id; cannot use Projects V2 GraphQL mutations.`);
+              throw new Error(`Issue #${issue_number} has no node_id; cannot set Issue Fields.`);
             }
 
-            const queryProjectForOrg = `
-              query($login: String!, $number: Int!, $cursor: String) {
+            const queryIssueFieldsForOrg = `
+              query($login: String!) {
                 organization(login: $login) {
-                  projectV2(number: $number) {
-                    id
-                    title
-                    fields(first: 100) {
-                      nodes {
-                        ... on ProjectV2SingleSelectField {
+                  issueFields(first: 100) {
+                    nodes {
+                      ... on IssueFieldSingleSelect {
+                        id
+                        name
+                        options {
                           id
                           name
-                          options {
-                            id
-                            name
-                          }
-                        }
-                      }
-                    }
-                    items(first: 100, after: $cursor) {
-                      pageInfo {
-                        hasNextPage
-                        endCursor
-                      }
-                      nodes {
-                        id
-                        content {
-                          ... on Issue {
-                            id
-                          }
                         }
                       }
                     }
@@ -148,71 +138,11 @@ jobs:
               }
             `;
 
-            const queryProjectForUser = `
-              query($login: String!, $number: Int!, $cursor: String) {
-                user(login: $login) {
-                  projectV2(number: $number) {
-                    id
-                    title
-                    fields(first: 100) {
-                      nodes {
-                        ... on ProjectV2SingleSelectField {
-                          id
-                          name
-                          options {
-                            id
-                            name
-                          }
-                        }
-                      }
-                    }
-                    items(first: 100, after: $cursor) {
-                      pageInfo {
-                        hasNextPage
-                        endCursor
-                      }
-                      nodes {
-                        id
-                        content {
-                          ... on Issue {
-                            id
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            `;
+            const issueFieldResult = await github.graphql(queryIssueFieldsForOrg, {
+              login: issueFieldOwner
+            });
 
-            const getProjectPage = async (cursor = null) => {
-              try {
-                const orgResult = await github.graphql(queryProjectForOrg, {
-                  login: projectOwner,
-                  number: projectNumber,
-                  cursor
-                });
-                const orgProject = orgResult?.organization?.projectV2;
-                if (orgProject) return orgProject;
-              } catch (error) {
-                // Ignore and try user lookup next.
-              }
-
-              const userResult = await github.graphql(queryProjectForUser, {
-                login: projectOwner,
-                number: projectNumber,
-                cursor
-              });
-              const userProject = userResult?.user?.projectV2;
-              if (userProject) return userProject;
-
-              throw new Error(`Project not found: ${projectOwner}/${projectNumber}`);
-            };
-
-            const firstPage = await getProjectPage(null);
-            const projectId = firstPage.id;
-            const projectTitle = firstPage.title;
-            const singleSelectFields = (firstPage.fields?.nodes || []).filter(Boolean);
+            const singleSelectFields = (issueFieldResult?.organization?.issueFields?.nodes || []).filter(Boolean);
             const field = singleSelectFields.find(
               (candidate) => (candidate.name || '').trim().toLowerCase() === fieldName.toLowerCase()
             );
@@ -220,7 +150,7 @@ jobs:
             if (!field) {
               const availableFieldNames = singleSelectFields.map((candidate) => candidate.name).filter(Boolean);
               throw new Error(
-                `Single-select field "${fieldName}" not found on project "${projectTitle}". Available single-select fields: ${availableFieldNames.join(', ')}`
+                `Issue single-select field "${fieldName}" not found on organization "${issueFieldOwner}". Available single-select fields: ${availableFieldNames.join(', ')}`
               );
             }
 
@@ -231,76 +161,41 @@ jobs:
             if (!option) {
               const availableOptionNames = (field.options || []).map((candidate) => candidate.name).filter(Boolean);
               throw new Error(
-                `Option "${responseValue}" not found in field "${fieldName}" on project "${projectTitle}". Available options: ${availableOptionNames.join(', ')}`
+                `Option "${responseValue}" not found in Issue Field "${fieldName}" on organization "${issueFieldOwner}". Available options: ${availableOptionNames.join(', ')}`
               );
             }
 
-            let itemId =
-              (firstPage.items?.nodes || []).find((item) => item?.content?.id === issueNodeId)?.id || null;
-
-            let hasNextPage = firstPage.items?.pageInfo?.hasNextPage || false;
-            let cursor = firstPage.items?.pageInfo?.endCursor || null;
-
-            while (!itemId && hasNextPage) {
-              const nextPage = await getProjectPage(cursor);
-              itemId =
-                (nextPage.items?.nodes || []).find((item) => item?.content?.id === issueNodeId)?.id || null;
-              hasNextPage = nextPage.items?.pageInfo?.hasNextPage || false;
-              cursor = nextPage.items?.pageInfo?.endCursor || null;
-            }
-
-            if (!itemId) {
-              const addToProjectMutation = `
-                mutation($projectId: ID!, $contentId: ID!) {
-                  addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
-                    item {
-                      id
-                    }
-                  }
-                }
-              `;
-
-              const addResult = await github.graphql(addToProjectMutation, {
-                projectId,
-                contentId: issueNodeId
-              });
-
-              itemId = addResult?.addProjectV2ItemById?.item?.id || null;
-            }
-
-            if (!itemId) {
-              throw new Error(`Failed to locate or create Project item for issue #${issue_number} in ${projectOwner}/${projectNumber}.`);
-            }
-
-            const updateSingleSelectMutation = `
-              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
-                updateProjectV2ItemFieldValue(
+            const setIssueFieldMutation = `
+              mutation($issueId: ID!, $fieldId: ID!, $optionId: ID!) {
+                setIssueFieldValue(
                   input: {
-                    projectId: $projectId
-                    itemId: $itemId
-                    fieldId: $fieldId
-                    value: { singleSelectOptionId: $optionId }
+                    issueId: $issueId
+                    issueFields: [
+                      {
+                        fieldId: $fieldId
+                        singleSelectOptionId: $optionId
+                      }
+                    ]
                   }
                 ) {
-                  projectV2Item {
+                  issue {
                     id
                   }
                 }
               }
             `;
 
-            await github.graphql(updateSingleSelectMutation, {
-              projectId,
-              itemId,
+            await github.graphql(setIssueFieldMutation, {
+              issueId: issueNodeId,
               fieldId: field.id,
               optionId: option.id
             });
 
-            core.setOutput('project_title', projectTitle);
+            core.setOutput('issue_field_owner', issueFieldOwner);
             core.setOutput('field_name', field.name);
             core.setOutput('application_version', option.name);
             core.setOutput('environment', option.name);
-            core.info(`Set "${field.name}" to "${option.name}" on project "${projectTitle}" for #${issue_number}.`);
+            core.info(`Set Issue Field "${field.name}" to "${option.name}" for #${issue_number}.`);
 
 # Example per-repo caller workflow:
 #
