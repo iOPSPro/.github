@@ -42,6 +42,7 @@ The workflows in `.github/workflows/` are reusable workflow building blocks. The
 | Workflow | Purpose | Common trigger |
 | --- | --- | --- |
 | `.github/workflows/apply-issue-form-iteration-label.yml` | Reads `Assign to current iteration?` and adds `assign-current-iteration` when the answer is `Yes`. | `issues.opened`, `issues.edited` |
+| `.github/workflows/sync-issue-created-by.yml` | Writes the issue creator's GitHub username/login to the Organization Issue Field `Created By`. | `issues.opened` |
 | `.github/workflows/sync-project-iteration-from-label.yml` | Finds the current Project V2 iteration, sets `Iteration` and `60 Day Block`, then removes `assign-current-iteration`. | `issues.labeled` for `assign-current-iteration` |
 | `.github/workflows/sync-project-application-version-from-form.yml` | Reads the issue form environment answer and sets the Organization Issue Field `Environment`. | `issues.opened`, `issues.edited` |
 | `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parent issues labeled `needs-testing`; copies assignees, Project V2 iteration fields, and Issue Field `Environment`; marks the parent with `testing-created`. | `issues.opened`, `issues.labeled` gated by `needs-testing` |
@@ -69,6 +70,7 @@ Durable planning metadata is stored as Organization Issue Fields so changes are 
 Expected Organization Issue Fields:
 
 - `Customer`: single-select issue-owned metadata.
+- `Created By`: text issue-owned metadata populated with the creator's GitHub username/login. The current iOPSPro numeric Issue Field ID is `42618012`.
 - `Effort`: number issue-owned metadata.
 - `Environment`: single-select issue-owned metadata with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`. The current iOPSPro numeric Issue Field ID is `42612370`.
 - `Priority`: single-select issue-owned metadata with options `A1`, `A2`, `A3`, `B`, and `C`.
@@ -142,6 +144,7 @@ Use the same pattern for the other reusable workflows:
 - Pass `owner`, `repo`, and `issue_number` from the event payload.
 - Pass `pull_number` from the pull request payload for PR review queue automation.
 - Pass `project_owner: iOPSPro` and `project_number: 5` unless the repository uses a different project.
+- Pass `created_by: ${{ github.event.issue.user.login }}` for `sync-issue-created-by.yml` callers, or omit it to let the reusable workflow read the issue author login.
 - Pass `secrets.PROJECT_TOKEN` as `project_token` for workflows that read or write Project V2 data or Organization Issue Fields.
 
 Example caller for Dylan Richard PR review queue automation:

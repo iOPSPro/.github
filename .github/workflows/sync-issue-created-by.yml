@@ -1,0 +1,132 @@
+name: Sync issue created-by field (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        description: Organization or user that owns the repository containing the issue
+        required: true
+        type: string
+      repo:
+        description: Repository name containing the issue
+        required: true
+        type: string
+      issue_number:
+        description: Issue number to update
+        required: true
+        type: number
+      issue_field_owner:
+        description: Organization that owns the Issue Field
+        required: false
+        default: iOPSPro
+        type: string
+      issue_field_name:
+        description: Organization Issue Field text name
+        required: false
+        default: Created By
+        type: string
+      issue_field_id:
+        description: Numeric Organization Issue Field ID. Defaults to iOPSPro Created By.
+        required: false
+        default: "42618012"
+        type: string
+      created_by:
+        description: GitHub username/login of the issue creator. Defaults to the issue author when omitted.
+        required: false
+        default: ""
+        type: string
+    secrets:
+      project_token:
+        description: Token with access to read/write Organization Issue Fields
+        required: true
+
+jobs:
+  sync_created_by:
+    name: Set Issue Created By
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+
+    steps:
+      - name: Set Created By field
+        uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_ISSUE_FIELD_OWNER: ${{ inputs.issue_field_owner }}
+          INPUT_ISSUE_FIELD_NAME: ${{ inputs.issue_field_name }}
+          INPUT_ISSUE_FIELD_ID: ${{ inputs.issue_field_id }}
+          INPUT_CREATED_BY: ${{ inputs.created_by }}
+        with:
+          github-token: ${{ secrets.project_token }}
+          script: |
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
+            const issueFieldOwner = (process.env.INPUT_ISSUE_FIELD_OWNER || owner).trim();
+            const fieldName = (process.env.INPUT_ISSUE_FIELD_NAME || 'Created By').trim();
+            const fieldId = Number(process.env.INPUT_ISSUE_FIELD_ID || 0);
+            let createdBy = (process.env.INPUT_CREATED_BY || '').trim();
+
+            if (!fieldId) {
+              throw new Error(`Missing numeric Issue Field ID for "${fieldName}" on organization "${issueFieldOwner}".`);
+            }
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number
+            });
+
+            if (!createdBy) {
+              createdBy = (issue.user?.login || '').trim();
+            }
+
+            if (!createdBy) {
+              throw new Error(`Issue #${issue_number} has no author login; cannot set "${fieldName}".`);
+            }
+
+            await github.request('POST /repos/{owner}/{repo}/issues/{issue_number}/issue-field-values', {
+              owner,
+              repo,
+              issue_number,
+              issue_field_values: [
+                {
+                  field_id: fieldId,
+                  value: createdBy
+                }
+              ],
+              headers: {
+                'X-GitHub-Api-Version': '2026-03-10'
+              }
+            });
+
+            core.setOutput('issue_field_owner', issueFieldOwner);
+            core.setOutput('field_name', fieldName);
+            core.setOutput('created_by', createdBy);
+            core.info(`Set Issue Field "${fieldName}" to "${createdBy}" for #${issue_number}.`);
+
+# Example per-repo caller workflow:
+#
+# name: Sync issue creator
+#
+# on:
+#   issues:
+#     types: [opened]
+#
+# jobs:
+#   call-reusable-worker:
+#     if: ${{ github.event.issue.state == 'open' }}
+#     uses: iOPSPro/.github/.github/workflows/sync-issue-created-by.yml@main
+#     with:
+#       owner: ${{ github.repository_owner }}
+#       repo: ${{ github.event.repository.name }}
+#       issue_number: ${{ github.event.issue.number }}
+#       issue_field_owner: iOPSPro
+#       issue_field_name: Created By
+#       issue_field_id: "42618012"
+#       created_by: ${{ github.event.issue.user.login }}
+#     secrets:
+#       project_token: ${{ secrets.PROJECT_TOKEN }}
