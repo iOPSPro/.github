@@ -84,8 +84,8 @@ Workflows in this repository are reusable workflow scaffolds. They do not automa
 | `.github/workflows/sync-issue-created-by.yml` | Writes the issue creator's GitHub username/login to the Organization Issue Field `Created By`. | `issues.opened` |
 | `.github/workflows/sync-project-iteration-from-label.yml` | Finds the current iteration for `Iteration` and, when available, `60 Day Block`; sets those project fields; removes `assign-current-iteration` after success. | `issues.labeled` for `assign-current-iteration` |
 | `.github/workflows/sync-project-application-version-from-form.yml` | Reads the environment answer from the issue form and sets the Organization Issue Field `Environment`. | `issues.opened`, `issues.edited` |
-| `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parents labeled `needs-testing`; copies parent assignees; attaches it as a sub-issue; adds/copies Project V2 iteration fields and the Issue Field `Environment`; labels the parent `testing-created`; comments with the child issue number. | `issues.opened` or `issues.labeled`, gated by `needs-testing` |
-| `.github/workflows/copy-parent-project-fields-to-test-child.yml` | For manually created testing child issues, finds the parent via the sub-issues API, copies parent assignees, adds the child to the project if needed, and copies Project V2 `Iteration`/`60 Day Block` plus the Issue Field `Environment`. | `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch` |
+| `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parents labeled `needs-testing`; copies parent assignees; attaches it as a sub-issue; adds/copies Project V2 iteration fields and the Issue Fields `Environment` and `Created By`; labels the parent `testing-created`; comments with the child issue number. | `issues.opened` or `issues.labeled`, gated by `needs-testing` |
+| `.github/workflows/copy-parent-project-fields-to-test-child.yml` | For manually created testing child issues, finds the parent via the sub-issues API, copies parent assignees, adds the child to the project if needed, and copies Project V2 `Iteration`/`60 Day Block` plus the Issue Fields `Environment` and `Created By`. | `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch` |
 | `.github/workflows/move-testing-subissues-to-testing.yml` | Finds sub-issues with `Testing:` in the title and moves their Project V2 `Status` to `In progress`. | Parent issue lifecycle events, commonly after parent issue closure or readiness transitions |
 | `.github/workflows/sync-pr-delivery-board-for-review.yml` | Requests review from the configured reviewer, optionally assigns the reviewer, adds the PR to the Delivery Board, sets current `Iteration` and `60 Day Block`, and sets `Status` to `In progress`. Defaults to `ready-for-dr-review` and `drichard1989`. | `pull_request.labeled`, gated by `ready-for-dr-review` |
 
@@ -101,14 +101,14 @@ Automation-created path:
 2. A caller workflow invokes `create-testing-subissue.yml`.
 3. The reusable workflow checks that the parent has `needs-testing` and does not already have `testing-created`.
 4. It creates a child issue titled `Testing: <parent title>` with label `testing` and type `Test`.
-5. It attaches the child as a GitHub sub-issue, copies parent assignees, adds/copies Project V2 iteration values and the Issue Field `Environment`, labels the parent `testing-created`, and comments on the parent.
+5. It attaches the child as a GitHub sub-issue, copies parent assignees, adds/copies Project V2 iteration values and the Issue Fields `Environment` and `Created By`, labels the parent `testing-created`, and comments on the parent.
 
 Manually created path:
 
 1. A user creates an issue with the `Testing` form.
 2. The issue is attached as a child issue of the parent.
 3. A caller workflow invokes `copy-parent-project-fields-to-test-child.yml`.
-4. The reusable workflow verifies the child has the `testing` label, finds the parent through the sub-issues API, and copies assignees, Project V2 iteration values, and the Issue Field `Environment`.
+4. The reusable workflow verifies the child has the `testing` label, finds the parent through the sub-issues API, and copies assignees, Project V2 iteration values, and the Issue Fields `Environment` and `Created By`.
 
 GitHub Actions does not expose a dedicated documented `issues` activity type for "issue became a sub-issue." For manually created testing children, caller repositories should trigger the copy workflow from nearby events such as `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch`.
 
@@ -121,7 +121,7 @@ Participating repositories should add caller workflows for the pieces they need:
 - Sync current iteration when `assign-current-iteration` is applied.
 - Sync the Issue Field `Environment` from issue forms on issue open/edit.
 - Create testing sub-issues when `needs-testing` is present.
-- Copy parent Project V2 iteration fields and Issue Field `Environment` for manually created testing children.
+- Copy parent Project V2 iteration fields and Issue Fields `Environment`/`Created By` for testing children.
 - Move testing sub-issues to `In progress` when the parent workflow needs that handoff.
 - Sync PRs to the Delivery Board review queue when `ready-for-dr-review` is applied.
 

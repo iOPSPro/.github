@@ -45,8 +45,8 @@ The workflows in `.github/workflows/` are reusable workflow building blocks. The
 | `.github/workflows/sync-issue-created-by.yml` | Writes the issue creator's GitHub username/login to the Organization Issue Field `Created By`. | `issues.opened` |
 | `.github/workflows/sync-project-iteration-from-label.yml` | Finds the current Project V2 iteration, sets `Iteration` and `60 Day Block`, then removes `assign-current-iteration`. | `issues.labeled` for `assign-current-iteration` |
 | `.github/workflows/sync-project-application-version-from-form.yml` | Reads the issue form environment answer and sets the Organization Issue Field `Environment`. | `issues.opened`, `issues.edited` |
-| `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parent issues labeled `needs-testing`; copies assignees, Project V2 iteration fields, and Issue Field `Environment`; marks the parent with `testing-created`. | `issues.opened`, `issues.labeled` gated by `needs-testing` |
-| `.github/workflows/copy-parent-project-fields-to-test-child.yml` | For manually created testing child issues, finds the parent issue, copies assignees, adds the child to the project if needed, and copies Project V2 iteration fields plus Issue Field `Environment`. | `issues.opened`, `issues.edited`, `issues.labeled`, or `workflow_dispatch` |
+| `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parent issues labeled `needs-testing`; copies assignees, Project V2 iteration fields, and Issue Fields `Environment`/`Created By`; marks the parent with `testing-created`. | `issues.opened`, `issues.labeled` gated by `needs-testing` |
+| `.github/workflows/copy-parent-project-fields-to-test-child.yml` | For manually created testing child issues, finds the parent issue, copies assignees, adds the child to the project if needed, and copies Project V2 iteration fields plus Issue Fields `Environment`/`Created By`. | `issues.opened`, `issues.edited`, `issues.labeled`, or `workflow_dispatch` |
 | `.github/workflows/move-testing-subissues-to-testing.yml` | Finds testing sub-issues and moves their Project V2 `Status` to `In progress`. | Parent issue lifecycle events |
 | `.github/workflows/sync-pr-delivery-board-for-review.yml` | Requests review from the configured reviewer, optionally assigns the reviewer, adds the PR to the Delivery Board, sets current `Iteration` and `60 Day Block`, and sets `Status` to `In progress`. Defaults to `ready-for-dr-review` and `drichard1989`. | `pull_request.labeled` gated by `ready-for-dr-review` |
 
@@ -180,14 +180,14 @@ Automation-created path:
 2. A caller workflow invokes `create-testing-subissue.yml`.
 3. The reusable workflow skips parents that already have `testing-created`.
 4. It creates `Testing: <parent title>` with label `testing` and type `Test`.
-5. It attaches the child as a sub-issue, copies assignees, Project V2 iteration fields, and Issue Field `Environment`, labels the parent `testing-created`, and comments on the parent.
+5. It attaches the child as a sub-issue, copies assignees, Project V2 iteration fields, and Issue Fields `Environment`/`Created By`, labels the parent `testing-created`, and comments on the parent.
 
 Manually created path:
 
 1. A user creates an issue from the `Testing` form.
 2. The issue is attached as a child issue of the parent.
 3. A caller workflow invokes `copy-parent-project-fields-to-test-child.yml`.
-4. The reusable workflow verifies the `testing` label, finds the parent through the sub-issues API, and copies assignees, Project V2 iteration fields, and Issue Field `Environment`.
+4. The reusable workflow verifies the `testing` label, finds the parent through the sub-issues API, and copies assignees, Project V2 iteration fields, and Issue Fields `Environment`/`Created By`.
 
 GitHub Actions does not expose a dedicated documented `issues` event for "issue became a sub-issue." For manually created testing children, use nearby triggers such as `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch`.
 
