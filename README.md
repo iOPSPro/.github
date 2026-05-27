@@ -55,6 +55,7 @@ The reusable workflows split durable issue metadata from Project V2 board state.
 Expected Organization Issue Fields:
 
 - `Customer`: single-select issue-owned metadata.
+- `Created By`: text issue-owned metadata populated with the creator's GitHub username/login. The current iOPSPro numeric Issue Field ID is `42618012`.
 - `Effort`: number issue-owned metadata.
 - `Environment`: single-select issue-owned metadata with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`. The current iOPSPro numeric Issue Field ID is `42612370`.
 - `Priority`: single-select issue-owned metadata with options `A1`, `A2`, `A3`, `B`, and `C`.
@@ -80,6 +81,7 @@ Workflows in this repository are reusable workflow scaffolds. They do not automa
 | Workflow | Purpose | Typical caller trigger |
 | --- | --- | --- |
 | `.github/workflows/apply-issue-form-iteration-label.yml` | Reads the `Assign to current iteration?` answer and adds `assign-current-iteration` when the answer is `Yes`. | `issues.opened`, `issues.edited` |
+| `.github/workflows/sync-issue-created-by.yml` | Writes the issue creator's GitHub username/login to the Organization Issue Field `Created By`. | `issues.opened` |
 | `.github/workflows/sync-project-iteration-from-label.yml` | Finds the current iteration for `Iteration` and, when available, `60 Day Block`; sets those project fields; removes `assign-current-iteration` after success. | `issues.labeled` for `assign-current-iteration` |
 | `.github/workflows/sync-project-application-version-from-form.yml` | Reads the environment answer from the issue form and sets the Organization Issue Field `Environment`. | `issues.opened`, `issues.edited` |
 | `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parents labeled `needs-testing`; copies parent assignees; attaches it as a sub-issue; adds/copies Project V2 iteration fields and the Issue Field `Environment`; labels the parent `testing-created`; comments with the child issue number. | `issues.opened` or `issues.labeled`, gated by `needs-testing` |
@@ -115,6 +117,7 @@ GitHub Actions does not expose a dedicated documented `issues` activity type for
 Participating repositories should add caller workflows for the pieces they need:
 
 - Apply the issue-form iteration label on issue open/edit.
+- Sync the Issue Field `Created By` from the issue author login on issue open.
 - Sync current iteration when `assign-current-iteration` is applied.
 - Sync the Issue Field `Environment` from issue forms on issue open/edit.
 - Create testing sub-issues when `needs-testing` is present.
@@ -129,6 +132,7 @@ Caller workflows should pass:
 - `issue_number` from the issue event or `workflow_dispatch` input
 - `project_owner: iOPSPro`
 - `project_number: 5`
+- `issue_field_id: "42618012"` when syncing the `Created By` Issue Field
 - `issue_field_id: "42612370"` when syncing the `Environment` Issue Field
 - `project_token: ${{ secrets.PROJECT_TOKEN }}`
 
