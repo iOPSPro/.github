@@ -55,6 +55,16 @@ on:
         required: false
         default: "42612370"
         type: string
+      issue_created_by_field_name:
+        description: Organization Issue Field Created By name to copy from parent
+        required: false
+        default: Created By
+        type: string
+      issue_created_by_field_id:
+        description: Numeric Organization Issue Field ID for Created By
+        required: false
+        default: "42618012"
+        type: string
     secrets:
       project_token:
         description: Token with access to read/write issues, Project V2 fields, and Organization Issue Fields
@@ -83,6 +93,8 @@ jobs:
           INPUT_APPLICATION_VERSION_FIELD_NAME: ${{ inputs.application_version_field_name }}
           INPUT_ISSUE_ENVIRONMENT_FIELD_NAME: ${{ inputs.issue_environment_field_name }}
           INPUT_ISSUE_ENVIRONMENT_FIELD_ID: ${{ inputs.issue_environment_field_id }}
+          INPUT_ISSUE_CREATED_BY_FIELD_NAME: ${{ inputs.issue_created_by_field_name }}
+          INPUT_ISSUE_CREATED_BY_FIELD_ID: ${{ inputs.issue_created_by_field_id }}
         with:
           github-token: ${{ secrets.project_token }}
           script: |
@@ -100,9 +112,15 @@ jobs:
               'Environment'
             ).trim();
             const issueEnvironmentFieldId = Number(process.env.INPUT_ISSUE_ENVIRONMENT_FIELD_ID || 0);
+            const issueCreatedByFieldName = (process.env.INPUT_ISSUE_CREATED_BY_FIELD_NAME || 'Created By').trim();
+            const issueCreatedByFieldId = Number(process.env.INPUT_ISSUE_CREATED_BY_FIELD_ID || 0);
 
             if (!issueEnvironmentFieldId) {
               throw new Error(`Missing numeric Issue Field ID for "${issueEnvironmentFieldName}" on organization "${projectOwner}".`);
+            }
+
+            if (!issueCreatedByFieldId) {
+              throw new Error(`Missing numeric Issue Field ID for "${issueCreatedByFieldName}" on organization "${projectOwner}".`);
             }
 
             const { data: childIssue } = await github.rest.issues.get({
@@ -144,6 +162,7 @@ jobs:
 
             const parentIssueNodeId = parentIssue.node_id;
             const childIssueNodeId = childIssue.node_id;
+            const parentIssueAuthorLogin = (parentIssue.user?.login || '').trim();
 
             if (!parentIssueNodeId || !childIssueNodeId) {
               throw new Error(`Missing node_id for parent or child issue; cannot copy Project V2 fields or Issue Fields.`);
@@ -412,16 +431,34 @@ jobs:
               }
             );
 
-            const parentEnvironmentValue = (parentIssueFieldValues.data || [])
-              .find(value => Number(value.issue_field_id) === issueEnvironmentFieldId);
+            const findParentIssueFieldValue = (fieldId) =>
+              (parentIssueFieldValues.data || []).find(value => Number(value.issue_field_id) === fieldId);
 
-            const parentEnvironmentName =
-              parentEnvironmentValue?.single_select_option?.name ||
-              parentEnvironmentValue?.value ||
+            const getIssueFieldValue = (issueFieldValue) =>
+              issueFieldValue?.single_select_option?.name ||
+              issueFieldValue?.value ||
               '';
 
-            if (!parentEnvironmentName) {
-              core.info(`No parent Issue Field "${issueEnvironmentFieldName}" value found to copy.`);
+            const issueFieldValuesToCopy = [
+              {
+                fieldId: issueEnvironmentFieldId,
+                fieldName: issueEnvironmentFieldName,
+                value: getIssueFieldValue(findParentIssueFieldValue(issueEnvironmentFieldId))
+              },
+              {
+                fieldId: issueCreatedByFieldId,
+                fieldName: issueCreatedByFieldName,
+                value: getIssueFieldValue(findParentIssueFieldValue(issueCreatedByFieldId)) || parentIssueAuthorLogin
+              }
+            ].filter(field => {
+              if (!field.value) {
+                core.info(`No parent Issue Field "${field.fieldName}" value found to copy.`);
+                return false;
+              }
+              return true;
+            });
+
+            if (issueFieldValuesToCopy.length === 0) {
               return;
             }
 
@@ -429,18 +466,18 @@ jobs:
               owner,
               repo,
               issue_number: issueNumber,
-              issue_field_values: [
-                {
-                  field_id: issueEnvironmentFieldId,
-                  value: parentEnvironmentName
-                }
-              ],
+              issue_field_values: issueFieldValuesToCopy.map(field => ({
+                field_id: field.fieldId,
+                value: field.value
+              })),
               headers: {
                 'X-GitHub-Api-Version': '2026-03-10'
               }
             });
 
-            core.info(`Copied Issue Field "${issueEnvironmentFieldName}" = "${parentEnvironmentName}" from parent #${parentIssue.number} to child #${issueNumber}.`);
+            for (const field of issueFieldValuesToCopy) {
+              core.info(`Copied Issue Field "${field.fieldName}" = "${field.value}" from parent #${parentIssue.number} to child #${issueNumber}.`);
+            }
 # Example per-repo caller workflow:
 #
 # name: Copy parent fields to test child
