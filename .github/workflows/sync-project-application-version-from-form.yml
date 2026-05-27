@@ -33,6 +33,11 @@ on:
         required: false
         default: Environment
         type: string
+      issue_field_id:
+        description: Numeric Organization Issue Field ID. Defaults to iOPSPro Environment.
+        required: false
+        default: "42612370"
+        type: string
       question_heading:
         description: Issue form heading to inspect for environment value
         required: false
@@ -61,6 +66,7 @@ jobs:
           INPUT_PROJECT_OWNER: ${{ inputs.project_owner }}
           INPUT_PROJECT_FIELD_NAME: ${{ inputs.project_field_name }}
           INPUT_ISSUE_FIELD_NAME: ${{ inputs.issue_field_name }}
+          INPUT_ISSUE_FIELD_ID: ${{ inputs.issue_field_id }}
           INPUT_QUESTION_HEADING: ${{ inputs.question_heading }}
         with:
           github-token: ${{ secrets.project_token }}
@@ -74,8 +80,13 @@ jobs:
               process.env.INPUT_PROJECT_FIELD_NAME ||
               'Environment'
             ).trim();
+            const fieldId = Number(process.env.INPUT_ISSUE_FIELD_ID || 0);
             const heading = (process.env.INPUT_QUESTION_HEADING || 'Is there a specific environment this is for?').trim();
             const validResponses = new Set(['V1', 'V2', 'Backend', 'N/A', 'Both V1 and V2']);
+
+            if (!fieldId) {
+              throw new Error(`Missing numeric Issue Field ID for "${fieldName}" on organization "${issueFieldOwner}".`);
+            }
 
             const { data: issue } = await github.rest.issues.get({
               owner,
@@ -114,88 +125,26 @@ jobs:
               );
             }
 
-            const issueNodeId = issue.node_id;
-            if (!issueNodeId) {
-              throw new Error(`Issue #${issue_number} has no node_id; cannot set Issue Fields.`);
-            }
-
-            const queryIssueFieldsForOrg = `
-              query($login: String!) {
-                organization(login: $login) {
-                  issueFields(first: 100) {
-                    nodes {
-                      ... on IssueFieldSingleSelect {
-                        id
-                        name
-                        options {
-                          id
-                          name
-                        }
-                      }
-                    }
-                  }
+            await github.request('POST /repos/{owner}/{repo}/issues/{issue_number}/issue-field-values', {
+              owner,
+              repo,
+              issue_number,
+              issue_field_values: [
+                {
+                  field_id: fieldId,
+                  value: responseValue
                 }
+              ],
+              headers: {
+                'X-GitHub-Api-Version': '2026-03-10'
               }
-            `;
-
-            const issueFieldResult = await github.graphql(queryIssueFieldsForOrg, {
-              login: issueFieldOwner
-            });
-
-            const singleSelectFields = (issueFieldResult?.organization?.issueFields?.nodes || []).filter(Boolean);
-            const field = singleSelectFields.find(
-              (candidate) => (candidate.name || '').trim().toLowerCase() === fieldName.toLowerCase()
-            );
-
-            if (!field) {
-              const availableFieldNames = singleSelectFields.map((candidate) => candidate.name).filter(Boolean);
-              throw new Error(
-                `Issue single-select field "${fieldName}" not found on organization "${issueFieldOwner}". Available single-select fields: ${availableFieldNames.join(', ')}`
-              );
-            }
-
-            const option = (field.options || []).find(
-              (candidate) => (candidate.name || '').trim().toLowerCase() === responseValue.toLowerCase()
-            );
-
-            if (!option) {
-              const availableOptionNames = (field.options || []).map((candidate) => candidate.name).filter(Boolean);
-              throw new Error(
-                `Option "${responseValue}" not found in Issue Field "${fieldName}" on organization "${issueFieldOwner}". Available options: ${availableOptionNames.join(', ')}`
-              );
-            }
-
-            const setIssueFieldMutation = `
-              mutation($issueId: ID!, $fieldId: ID!, $optionId: ID!) {
-                setIssueFieldValue(
-                  input: {
-                    issueId: $issueId
-                    issueFields: [
-                      {
-                        fieldId: $fieldId
-                        singleSelectOptionId: $optionId
-                      }
-                    ]
-                  }
-                ) {
-                  issue {
-                    id
-                  }
-                }
-              }
-            `;
-
-            await github.graphql(setIssueFieldMutation, {
-              issueId: issueNodeId,
-              fieldId: field.id,
-              optionId: option.id
             });
 
             core.setOutput('issue_field_owner', issueFieldOwner);
-            core.setOutput('field_name', field.name);
-            core.setOutput('application_version', option.name);
-            core.setOutput('environment', option.name);
-            core.info(`Set Issue Field "${field.name}" to "${option.name}" for #${issue_number}.`);
+            core.setOutput('field_name', fieldName);
+            core.setOutput('application_version', responseValue);
+            core.setOutput('environment', responseValue);
+            core.info(`Set Issue Field "${fieldName}" to "${responseValue}" for #${issue_number}.`);
 
 # Example per-repo caller workflow:
 #

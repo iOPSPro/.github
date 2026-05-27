@@ -53,6 +53,11 @@ on:
         required: false
         default: Environment
         type: string
+      issue_environment_field_id:
+        description: Numeric Organization Issue Field ID for Environment
+        required: false
+        default: "42612370"
+        type: string
     secrets:
       project_token:
         description: Token with access to read/write Project V2 fields and Organization Issue Fields
@@ -177,10 +182,15 @@ jobs:
         env:
           INPUT_PROJECT_OWNER: ${{ inputs.project_owner }}
           INPUT_PROJECT_NUMBER: ${{ inputs.project_number }}
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_PARENT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_CHILD_ISSUE_NUMBER: ${{ steps.create_child.outputs.child_issue_number }}
           INPUT_PRIMARY_FIELD_NAME: ${{ inputs.iteration_field_name }}
           INPUT_SECONDARY_FIELD_NAME: ${{ inputs.secondary_iteration_field_name }}
           INPUT_APPLICATION_VERSION_FIELD_NAME: ${{ inputs.application_version_field_name }}
           INPUT_ISSUE_ENVIRONMENT_FIELD_NAME: ${{ inputs.issue_environment_field_name }}
+          INPUT_ISSUE_ENVIRONMENT_FIELD_ID: ${{ inputs.issue_environment_field_id }}
           INPUT_PARENT_NODE_ID: ${{ steps.parent.outputs.parent_issue_node_id }}
           INPUT_CHILD_NODE_ID: ${{ steps.create_child.outputs.child_issue_node_id }}
         with:
@@ -188,6 +198,10 @@ jobs:
           script: |
             const projectOwner = process.env.INPUT_PROJECT_OWNER;
             const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER);
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const parentIssueNumber = Number(process.env.INPUT_PARENT_ISSUE_NUMBER);
+            const childIssueNumber = Number(process.env.INPUT_CHILD_ISSUE_NUMBER);
             const primaryFieldName = (process.env.INPUT_PRIMARY_FIELD_NAME || 'Iteration').trim();
             const secondaryFieldName = (process.env.INPUT_SECONDARY_FIELD_NAME || '60 Day Block').trim();
             const issueEnvironmentFieldName = (
@@ -195,8 +209,13 @@ jobs:
               process.env.INPUT_APPLICATION_VERSION_FIELD_NAME ||
               'Environment'
             ).trim();
+            const issueEnvironmentFieldId = Number(process.env.INPUT_ISSUE_ENVIRONMENT_FIELD_ID || 0);
             const parentIssueNodeId = process.env.INPUT_PARENT_NODE_ID;
             const childIssueNodeId = process.env.INPUT_CHILD_NODE_ID;
+
+            if (!issueEnvironmentFieldId) {
+              throw new Error(`Missing numeric Issue Field ID for "${issueEnvironmentFieldName}" on organization "${projectOwner}".`);
+            }
 
             const queryProjectForOrg = `
               query($login: String!, $number: Int!, $cursor: String) {
@@ -437,107 +456,48 @@ jobs:
               }
             }
 
-            const queryIssueFieldValues = `
-              query($parentId: ID!, $fieldOwner: String!) {
-                parent: node(id: $parentId) {
-                  ... on Issue {
-                    issueFieldValues(first: 50) {
-                      nodes {
-                        ... on IssueFieldSingleSelectValue {
-                          name
-                          value
-                          field {
-                            ... on IssueFieldSingleSelect {
-                              id
-                              name
-                              options {
-                                id
-                                name
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-                organization(login: $fieldOwner) {
-                  issueFields(first: 100) {
-                    nodes {
-                      ... on IssueFieldSingleSelect {
-                        id
-                        name
-                        options {
-                          id
-                          name
-                        }
-                      }
-                    }
-                  }
+            const parentIssueFieldValues = await github.request(
+              'GET /repos/{owner}/{repo}/issues/{issue_number}/issue-field-values',
+              {
+                owner,
+                repo,
+                issue_number: parentIssueNumber,
+                per_page: 100,
+                headers: {
+                  'X-GitHub-Api-Version': '2026-03-10'
                 }
               }
-            `;
+            );
 
-            const issueFieldResult = await github.graphql(queryIssueFieldValues, {
-              parentId: parentIssueNodeId,
-              fieldOwner: projectOwner
-            });
+            const parentEnvironmentValue = (parentIssueFieldValues.data || [])
+              .find(value => Number(value.issue_field_id) === issueEnvironmentFieldId);
 
-            const normalizedIssueEnvironmentFieldName = issueEnvironmentFieldName.toLowerCase();
-            const parentEnvironmentValue = (issueFieldResult?.parent?.issueFieldValues?.nodes || [])
-              .filter(Boolean)
-              .find(value => value?.field?.name?.trim().toLowerCase() === normalizedIssueEnvironmentFieldName);
+            const parentEnvironmentName =
+              parentEnvironmentValue?.single_select_option?.name ||
+              parentEnvironmentValue?.value ||
+              '';
 
-            if (!parentEnvironmentValue?.name) {
+            if (!parentEnvironmentName) {
               core.info(`No parent Issue Field "${issueEnvironmentFieldName}" value found to copy.`);
               return;
             }
 
-            const issueField = (issueFieldResult?.organization?.issueFields?.nodes || [])
-              .filter(Boolean)
-              .find(field => field?.name?.trim().toLowerCase() === normalizedIssueEnvironmentFieldName);
-
-            if (!issueField) {
-              core.info(`Issue Field "${issueEnvironmentFieldName}" is not available on organization "${projectOwner}". Skipping.`);
-              return;
-            }
-
-            const option = (issueField.options || []).find(
-              candidate => (candidate.name || '').trim().toLowerCase() === parentEnvironmentValue.name.trim().toLowerCase()
-            );
-
-            if (!option) {
-              core.info(`Option "${parentEnvironmentValue.name}" is not available for Issue Field "${issueEnvironmentFieldName}". Skipping.`);
-              return;
-            }
-
-            const setIssueFieldMutation = `
-              mutation($issueId: ID!, $fieldId: ID!, $optionId: ID!) {
-                setIssueFieldValue(
-                  input: {
-                    issueId: $issueId
-                    issueFields: [
-                      {
-                        fieldId: $fieldId
-                        singleSelectOptionId: $optionId
-                      }
-                    ]
-                  }
-                ) {
-                  issue {
-                    id
-                  }
+            await github.request('POST /repos/{owner}/{repo}/issues/{issue_number}/issue-field-values', {
+              owner,
+              repo,
+              issue_number: childIssueNumber,
+              issue_field_values: [
+                {
+                  field_id: issueEnvironmentFieldId,
+                  value: parentEnvironmentName
                 }
+              ],
+              headers: {
+                'X-GitHub-Api-Version': '2026-03-10'
               }
-            `;
-
-            await github.graphql(setIssueFieldMutation, {
-              issueId: childIssueNodeId,
-              fieldId: issueField.id,
-              optionId: option.id
             });
 
-            core.info(`Copied Issue Field "${issueField.name}" = "${option.name}" from parent to testing child.`);
+            core.info(`Copied Issue Field "${issueEnvironmentFieldName}" = "${parentEnvironmentName}" from parent to testing child.`);
       - name: Add testing-created label to parent
         if: ${{ steps.parent.outputs.already_created != 'true' && steps.parent.outputs.has_needs_testing == 'true' }}
         uses: actions/github-script@v8

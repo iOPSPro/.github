@@ -70,7 +70,7 @@ Expected Organization Issue Fields:
 
 - `Customer`: single-select issue-owned metadata.
 - `Effort`: number issue-owned metadata.
-- `Environment`: single-select issue-owned metadata with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`.
+- `Environment`: single-select issue-owned metadata with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`. The current iOPSPro numeric Issue Field ID is `42612370`.
 - `Priority`: single-select issue-owned metadata with options `A1`, `A2`, `A3`, `B`, and `C`.
 - `Site`: single-select issue-owned metadata.
 - `Start Date`: date issue-owned metadata.
