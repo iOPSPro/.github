@@ -224,6 +224,34 @@ jobs:
               issue_number
             });
 
+            const issueFieldValuesResponse = await github.request(
+              'GET /repos/{owner}/{repo}/issues/{issue_number}/issue-field-values',
+              {
+                owner,
+                repo,
+                issue_number,
+                per_page: 100,
+                headers: {
+                  'X-GitHub-Api-Version': '2026-03-10'
+                }
+              }
+            );
+
+            const findIssueFieldValue = (fieldId) =>
+              (issueFieldValuesResponse.data || []).find(value => Number(value.issue_field_id) === fieldId);
+
+            const getIssueFieldValue = (issueFieldValue) =>
+              issueFieldValue?.single_select_option?.name ||
+              issueFieldValue?.value ||
+              '';
+
+            const currentSegmentValue = getIssueFieldValue(findIssueFieldValue(segmentFieldId));
+            const currentOrganizationValue = organizationFieldId
+              ? getIssueFieldValue(findIssueFieldValue(organizationFieldId))
+              : '';
+            const eventAction = String(context.payload.action || '');
+            const isIssueFieldEvent = eventAction.startsWith('field_');
+
             const lines = (issue.body || '').split(/\r?\n/);
             const findResponseValue = (headings) => {
               const headingPatterns = headings.map(heading => {
@@ -244,14 +272,27 @@ jobs:
               return '';
             };
 
-            const segmentValue = findResponseValue([segmentHeading]);
-            const organizationInput = findResponseValue([
+            const bodySegmentValue = findResponseValue([segmentHeading]);
+            const bodyOrganizationInput = findResponseValue([
               organizationHeading,
               'Customer (if applicable)',
               'Customer / tenant (if applicable)'
             ]);
+            const segmentValue = isIssueFieldEvent && currentSegmentValue
+              ? currentSegmentValue
+              : bodySegmentValue || currentSegmentValue;
+            const organizationInput = isIssueFieldEvent && currentOrganizationValue
+              ? currentOrganizationValue
+              : bodyOrganizationInput || currentOrganizationValue;
 
             const issueFieldValues = [];
+            const queueIssueFieldValue = (fieldId, value, currentValue) => {
+              if (!fieldId || !value || value === currentValue) return;
+              issueFieldValues.push({
+                field_id: fieldId,
+                value
+              });
+            };
             const writeIssueFieldValues = async () => {
               if (issueFieldValues.length === 0) return;
 
@@ -274,12 +315,9 @@ jobs:
                   `Unsupported ${segmentFieldName} response "${segmentValue}" on #${issue_number}. Expected one of: ${[...validSegments].join(', ')}.`
                 );
               }
-              issueFieldValues.push({
-                field_id: segmentFieldId,
-                value: segmentValue
-              });
+              queueIssueFieldValue(segmentFieldId, segmentValue, currentSegmentValue);
             } else {
-              core.info(`Heading "${segmentHeading}" not found on #${issue_number}. Skipping ${segmentFieldName}.`);
+              core.info(`No "${segmentFieldName}" value found on #${issue_number}. Skipping ${segmentFieldName}.`);
             }
 
             let canonicalOrganization = '';
@@ -293,10 +331,7 @@ jobs:
                 organizationStatus = canonicalOrganization === organizationInput ? 'canonical' : 'alias';
 
                 if (organizationFieldId) {
-                  issueFieldValues.push({
-                    field_id: organizationFieldId,
-                    value: canonicalOrganization
-                  });
+                  queueIssueFieldValue(organizationFieldId, canonicalOrganization, currentOrganizationValue);
                 } else {
                   core.warning(`No numeric Issue Field ID configured for "${organizationFieldName}". Normalized value "${canonicalOrganization}" was not written.`);
                 }
@@ -340,7 +375,7 @@ jobs:
                 throw new Error(`Unknown organization "${organizationInput}" on #${issue_number}.${suggestionText}`);
               }
             } else {
-              core.info(`Heading "${organizationHeading}" not found or blank on #${issue_number}. Skipping ${organizationFieldName}.`);
+              core.info(`No "${organizationFieldName}" value found on #${issue_number}. Skipping ${organizationFieldName}.`);
             }
 
             await writeIssueFieldValues();
