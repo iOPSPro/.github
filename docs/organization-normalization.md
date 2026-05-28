@@ -50,6 +50,7 @@ Use `.github/workflows/sync-issue-segment-and-organization.yml` from participati
 The workflow:
 
 - reads `Segment` and `Organization` answers from issue forms
+- reads current Issue Field values when triggered by Issue Field add/remove activity
 - writes `Segment` to the Segment Issue Field
 - normalizes known organization aliases to the canonical registry name
 - writes the canonical organization to the Organization Issue Field when its field ID is provided
@@ -63,7 +64,7 @@ name: Sync segment and organization
 
 on:
   issues:
-    types: [opened, edited]
+    types: [opened, edited, field_added, field_removed]
 
 jobs:
   sync-segment-organization:

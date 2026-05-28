@@ -621,7 +621,7 @@
     "id": "salt-lake-city-department-of-airports",
     "code": "SLCDA",
     "name": "Salt Lake City Department of Airports",
-    "aliases": ["SLCDA"]
+    "aliases": ["SLCDA", "SLC"]
   },
   {
     "id": "somerset",
