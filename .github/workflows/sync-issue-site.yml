@@ -1,0 +1,328 @@
+name: Sync issue site (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      owner:
+        description: Organization or user that owns the repository containing the issue
+        required: true
+        type: string
+      repo:
+        description: Repository name containing the issue
+        required: true
+        type: string
+      issue_number:
+        description: Issue number to update
+        required: true
+        type: number
+      issue_field_owner:
+        description: Organization that owns the Issue Field
+        required: false
+        default: iOPSPro
+        type: string
+      site_issue_field_name:
+        description: Organization Issue Field name for Site
+        required: false
+        default: Site
+        type: string
+      site_issue_field_id:
+        description: Numeric Organization Issue Field ID for Site. Defaults to iOPSPro Site.
+        required: false
+        default: "42617022"
+        type: string
+      site_heading:
+        description: Issue form heading to inspect for Site
+        required: false
+        default: Site
+        type: string
+      registry_repository:
+        description: Repository containing the canonical site registry
+        required: false
+        default: iOPSPro/.github
+        type: string
+      registry_ref:
+        description: Git ref to check out for the registry
+        required: false
+        default: main
+        type: string
+      registry_path:
+        description: Path to the canonical site registry JSON file
+        required: false
+        default: data/site-registry.json
+        type: string
+      comment_on_invalid:
+        description: Comment on the issue when the site is unknown
+        required: false
+        default: true
+        type: boolean
+    secrets:
+      project_token:
+        description: Token with access to read/write Organization Issue Fields and issue comments
+        required: true
+
+jobs:
+  sync_site:
+    name: Set Issue Site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Check out site registry
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.registry_repository }}
+          ref: ${{ inputs.registry_ref }}
+          path: github-defaults
+          token: ${{ secrets.project_token }}
+
+      - name: Normalize issue site
+        id: normalize
+        uses: actions/github-script@v8
+        env:
+          INPUT_OWNER: ${{ inputs.owner }}
+          INPUT_REPO: ${{ inputs.repo }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          INPUT_ISSUE_FIELD_OWNER: ${{ inputs.issue_field_owner }}
+          INPUT_SITE_FIELD_NAME: ${{ inputs.site_issue_field_name }}
+          INPUT_SITE_FIELD_ID: ${{ inputs.site_issue_field_id }}
+          INPUT_SITE_HEADING: ${{ inputs.site_heading }}
+          INPUT_REGISTRY_PATH: ${{ inputs.registry_path }}
+          INPUT_COMMENT_ON_INVALID: ${{ inputs.comment_on_invalid }}
+        with:
+          github-token: ${{ secrets.project_token }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const owner = process.env.INPUT_OWNER;
+            const repo = process.env.INPUT_REPO;
+            const issue_number = Number(process.env.INPUT_ISSUE_NUMBER);
+            const issueFieldOwner = (process.env.INPUT_ISSUE_FIELD_OWNER || owner).trim();
+            const siteFieldName = (process.env.INPUT_SITE_FIELD_NAME || 'Site').trim();
+            const siteFieldId = Number(process.env.INPUT_SITE_FIELD_ID || 0);
+            const siteHeading = (process.env.INPUT_SITE_HEADING || 'Site').trim();
+            const registryPath = path.join('github-defaults', process.env.INPUT_REGISTRY_PATH || 'data/site-registry.json');
+            const commentOnInvalid = process.env.INPUT_COMMENT_ON_INVALID === 'true';
+
+            if (!siteFieldId) {
+              throw new Error(`Missing numeric Issue Field ID for "${siteFieldName}" on organization "${issueFieldOwner}".`);
+            }
+
+            if (!fs.existsSync(registryPath)) {
+              throw new Error(`Site registry not found at ${registryPath}.`);
+            }
+
+            const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+            if (!Array.isArray(registry)) {
+              throw new Error(`Site registry must be a JSON array.`);
+            }
+
+            const normalizeKey = (value) =>
+              String(value || '')
+                .trim()
+                .toLowerCase()
+                .replace(/&/g, ' and ')
+                .replace(/[^a-z0-9]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            const registryByKey = new Map();
+            for (const entry of registry) {
+              if (!entry || !entry.id || !entry.name) {
+                throw new Error(`Every site registry entry must include id and name.`);
+              }
+
+              const aliases = Array.isArray(entry.aliases) ? entry.aliases : [];
+              for (const value of [entry.id, entry.code, entry.name, ...aliases]) {
+                const key = normalizeKey(value);
+                if (!key) continue;
+                if (registryByKey.has(key) && registryByKey.get(key).name !== entry.name) {
+                  throw new Error(`Duplicate site registry alias "${value}" maps to multiple sites.`);
+                }
+                registryByKey.set(key, entry);
+              }
+            }
+
+            const levenshtein = (a, b) => {
+              const rows = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+              for (let j = 1; j <= b.length; j += 1) rows[0][j] = j;
+              for (let i = 1; i <= a.length; i += 1) {
+                for (let j = 1; j <= b.length; j += 1) {
+                  const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                  rows[i][j] = Math.min(
+                    rows[i - 1][j] + 1,
+                    rows[i][j - 1] + 1,
+                    rows[i - 1][j - 1] + cost
+                  );
+                }
+              }
+              return rows[a.length][b.length];
+            };
+
+            const findSuggestion = (rawValue) => {
+              const key = normalizeKey(rawValue);
+              if (!key) return null;
+
+              let best = null;
+              for (const [aliasKey, entry] of registryByKey.entries()) {
+                const distance = levenshtein(key, aliasKey);
+                const ratio = distance / Math.max(key.length, aliasKey.length, 1);
+                if (!best || distance < best.distance || (distance === best.distance && aliasKey.length < best.aliasKey.length)) {
+                  best = { entry, aliasKey, distance, ratio };
+                }
+              }
+
+              if (!best) return null;
+              const allowableDistance = key.length <= 5 ? 1 : 2;
+              return best.distance <= allowableDistance || best.ratio <= 0.25 ? best.entry : null;
+            };
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number
+            });
+
+            const issueFieldValuesResponse = await github.request(
+              'GET /repos/{owner}/{repo}/issues/{issue_number}/issue-field-values',
+              {
+                owner,
+                repo,
+                issue_number,
+                per_page: 100,
+                headers: {
+                  'X-GitHub-Api-Version': '2026-03-10'
+                }
+              }
+            );
+
+            const findIssueFieldValue = (fieldId) =>
+              (issueFieldValuesResponse.data || []).find(value => Number(value.issue_field_id) === fieldId);
+
+            const getIssueFieldValue = (issueFieldValue) =>
+              issueFieldValue?.single_select_option?.name ||
+              issueFieldValue?.value ||
+              '';
+
+            const currentSiteValue = getIssueFieldValue(findIssueFieldValue(siteFieldId));
+            const eventAction = String(context.payload.action || '');
+            const isIssueFieldEvent = eventAction.startsWith('field_');
+
+            const lines = (issue.body || '').split(/\r?\n/);
+            const findResponseValue = (headings) => {
+              const headingPatterns = headings.map(heading => {
+                const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                return new RegExp(`^###\\s*${escapedHeading}\\s*$`, 'i');
+              });
+
+              for (let i = 0; i < lines.length; i += 1) {
+                if (!headingPatterns.some(pattern => pattern.test(lines[i].trim()))) continue;
+                for (let j = i + 1; j < lines.length; j += 1) {
+                  const candidate = lines[j].trim();
+                  if (/^###\s+/.test(candidate)) return '';
+                  if (!candidate || candidate === '_No response_') continue;
+                  return candidate;
+                }
+                return '';
+              }
+              return '';
+            };
+
+            const bodySiteInput = findResponseValue([siteHeading]);
+            const siteInput = isIssueFieldEvent && currentSiteValue
+              ? currentSiteValue
+              : bodySiteInput || currentSiteValue;
+
+            if (!siteInput) {
+              core.info(`No "${siteFieldName}" value found on #${issue_number}. Skipping ${siteFieldName}.`);
+              core.setOutput('site_status', 'blank');
+              return;
+            }
+
+            const siteKey = normalizeKey(siteInput);
+            const registryEntry = registryByKey.get(siteKey);
+            if (!registryEntry) {
+              const suggestion = findSuggestion(siteInput);
+              const marker = '<!-- iops-site-validation -->';
+              const suggestionText = suggestion ? ` Did you mean **${suggestion.name}**?` : '';
+              const body = `${marker}\nUnknown site **${siteInput}**.${suggestionText}\n\nPlease update the issue Site value or add the site and aliases to \`${process.env.INPUT_REGISTRY_PATH}\`.`;
+
+              if (commentOnInvalid) {
+                const comments = await github.paginate(github.rest.issues.listComments, {
+                  owner,
+                  repo,
+                  issue_number,
+                  per_page: 100
+                });
+
+                const existingComment = comments.find(comment =>
+                  comment.user?.type === 'Bot' && String(comment.body || '').includes(marker)
+                );
+
+                if (existingComment) {
+                  await github.rest.issues.updateComment({
+                    owner,
+                    repo,
+                    comment_id: existingComment.id,
+                    body
+                  });
+                } else {
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number,
+                    body
+                  });
+                }
+              }
+
+              throw new Error(`Unknown site "${siteInput}" on #${issue_number}.${suggestionText}`);
+            }
+
+            const canonicalSite = registryEntry.name;
+            const siteStatus = canonicalSite === siteInput ? 'canonical' : 'alias';
+
+            if (canonicalSite !== currentSiteValue) {
+              await github.request('POST /repos/{owner}/{repo}/issues/{issue_number}/issue-field-values', {
+                owner,
+                repo,
+                issue_number,
+                issue_field_values: [
+                  {
+                    field_id: siteFieldId,
+                    value: canonicalSite
+                  }
+                ],
+                headers: {
+                  'X-GitHub-Api-Version': '2026-03-10'
+                }
+              });
+            }
+
+            core.setOutput('site_input', siteInput);
+            core.setOutput('site', canonicalSite);
+            core.setOutput('site_status', siteStatus);
+            core.info(`Normalized "${siteInput}" to "${canonicalSite}" for #${issue_number}.`);
+
+# Example per-repo caller workflow:
+#
+# name: Sync site
+#
+# on:
+#   issues:
+#     types: [opened, edited, field_added, field_removed]
+#
+# jobs:
+#   call-reusable-worker:
+#     if: ${{ github.event.issue.state == 'open' }}
+#     uses: iOPSPro/.github/.github/workflows/sync-issue-site.yml@main
+#     with:
+#       owner: ${{ github.repository_owner }}
+#       repo: ${{ github.event.repository.name }}
+#       issue_number: ${{ github.event.issue.number }}
+#       issue_field_owner: iOPSPro
+#       site_issue_field_id: "42617022"
+#     secrets:
+#       project_token: ${{ secrets.PROJECT_TOKEN }}

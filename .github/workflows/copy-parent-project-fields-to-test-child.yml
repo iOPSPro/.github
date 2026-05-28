@@ -85,6 +85,16 @@ on:
         required: false
         default: "42656518"
         type: string
+      issue_site_field_name:
+        description: Organization Issue Field Site name to copy from parent
+        required: false
+        default: Site
+        type: string
+      issue_site_field_id:
+        description: Numeric Organization Issue Field ID for Site
+        required: false
+        default: "42617022"
+        type: string
     secrets:
       project_token:
         description: Token with access to read/write issues, Project V2 fields, and Organization Issue Fields
@@ -119,6 +129,8 @@ jobs:
           INPUT_ISSUE_SEGMENT_FIELD_ID: ${{ inputs.issue_segment_field_id }}
           INPUT_ISSUE_ORGANIZATION_FIELD_NAME: ${{ inputs.issue_organization_field_name }}
           INPUT_ISSUE_ORGANIZATION_FIELD_ID: ${{ inputs.issue_organization_field_id }}
+          INPUT_ISSUE_SITE_FIELD_NAME: ${{ inputs.issue_site_field_name }}
+          INPUT_ISSUE_SITE_FIELD_ID: ${{ inputs.issue_site_field_id }}
         with:
           github-token: ${{ secrets.project_token }}
           script: |
@@ -142,6 +154,8 @@ jobs:
             const issueSegmentFieldId = Number(process.env.INPUT_ISSUE_SEGMENT_FIELD_ID || 0);
             const issueOrganizationFieldName = (process.env.INPUT_ISSUE_ORGANIZATION_FIELD_NAME || 'Organization').trim();
             const issueOrganizationFieldId = Number(process.env.INPUT_ISSUE_ORGANIZATION_FIELD_ID || 0);
+            const issueSiteFieldName = (process.env.INPUT_ISSUE_SITE_FIELD_NAME || 'Site').trim();
+            const issueSiteFieldId = Number(process.env.INPUT_ISSUE_SITE_FIELD_ID || 0);
 
             if (!issueEnvironmentFieldId) {
               throw new Error(`Missing numeric Issue Field ID for "${issueEnvironmentFieldName}" on organization "${projectOwner}".`);
@@ -157,6 +171,10 @@ jobs:
 
             if (!issueOrganizationFieldId) {
               core.info(`No numeric Issue Field ID configured for "${issueOrganizationFieldName}". Skipping Organization copy.`);
+            }
+
+            if (!issueSiteFieldId) {
+              core.info(`No numeric Issue Field ID configured for "${issueSiteFieldName}". Skipping Site copy.`);
             }
 
             const { data: childIssue } = await github.rest.issues.get({
@@ -495,6 +513,11 @@ jobs:
                 fieldId: issueOrganizationFieldId,
                 fieldName: issueOrganizationFieldName,
                 value: issueOrganizationFieldId ? getIssueFieldValue(findParentIssueFieldValue(issueOrganizationFieldId)) : ''
+              },
+              {
+                fieldId: issueSiteFieldId,
+                fieldName: issueSiteFieldName,
+                value: issueSiteFieldId ? getIssueFieldValue(findParentIssueFieldValue(issueSiteFieldId)) : ''
               }
             ].filter(field => {
               if (!field.value) {

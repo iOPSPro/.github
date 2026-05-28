@@ -1,0 +1,2562 @@
+[
+  {
+    "id": "abe-lehigh-valley-international-airport",
+    "code": "ABE",
+    "name": "Lehigh Valley International Airport",
+    "aliases": [
+      "ABE"
+    ]
+  },
+  {
+    "id": "abq-albuquerque-international-sunport",
+    "code": "ABQ",
+    "name": "Albuquerque International Sunport",
+    "aliases": [
+      "ABQ"
+    ]
+  },
+  {
+    "id": "act-waco-regional-airport",
+    "code": "ACT",
+    "name": "Waco Regional Airport",
+    "aliases": [
+      "ACT"
+    ]
+  },
+  {
+    "id": "adq-kodiak-benny-benson-state-airport",
+    "code": "ADQ",
+    "name": "Kodiak Benny Benson State Airport",
+    "aliases": [
+      "ADQ"
+    ]
+  },
+  {
+    "id": "afw-perot-field-fort-worth-alliance-airport",
+    "code": "AFW",
+    "name": "Perot Field/Fort Worth Alliance Airport",
+    "aliases": [
+      "AFW"
+    ]
+  },
+  {
+    "id": "ags-augusta-regional-airport",
+    "code": "AGS",
+    "name": "Augusta Regional Airport",
+    "aliases": [
+      "AGS"
+    ]
+  },
+  {
+    "id": "aig-langlade-county-airport-antigo-wisconsin",
+    "code": "AIG",
+    "name": "Langlade County Airport, Antigo, Wisconsin",
+    "aliases": [
+      "AIG"
+    ]
+  },
+  {
+    "id": "akr-akron-fulton-international-airport-akron-ohio",
+    "code": "AKR",
+    "name": "Akron Fulton International Airport, Akron, Ohio",
+    "aliases": [
+      "AKR"
+    ]
+  },
+  {
+    "id": "ala-almaty-international-airport-kazakhstan",
+    "code": "ALA",
+    "name": "Almaty International Airport, Kazakhstan",
+    "aliases": [
+      "ALA"
+    ]
+  },
+  {
+    "id": "ama-rick-husband-amarillo-international-airport",
+    "code": "AMA",
+    "name": "Rick Husband Amarillo International Airport",
+    "aliases": [
+      "AMA"
+    ]
+  },
+  {
+    "id": "amd-ahmedabad-airport-ahmedabad-india",
+    "code": "AMD",
+    "name": "Ahmedabad Airport, Ahmedabad, India",
+    "aliases": [
+      "AMD"
+    ]
+  },
+  {
+    "id": "anc-ted-stevens-anchorage-international-airport-alaska",
+    "code": "ANC",
+    "name": "Ted Stevens Anchorage International Airport, Alaska",
+    "aliases": [
+      "ANC"
+    ]
+  },
+  {
+    "id": "and-anderson-regional-airport-anderson-indiana",
+    "code": "AND",
+    "name": "Anderson Regional Airport, Anderson, Indiana",
+    "aliases": [
+      "AND"
+    ]
+  },
+  {
+    "id": "anu-v-c-bird-international-airport",
+    "code": "ANU",
+    "name": "V. C. Bird International Airport",
+    "aliases": [
+      "ANU"
+    ]
+  },
+  {
+    "id": "aqj-king-hussein-international-airport-aqaba-aqaba-jordan",
+    "code": "AQJ",
+    "name": "King Hussein International Airport (Aqaba), Aqaba, Jordan",
+    "aliases": [
+      "AQJ"
+    ]
+  },
+  {
+    "id": "arn-stockholm-arlanda-airport",
+    "code": "ARN",
+    "name": "Stockholm Arlanda Airport",
+    "aliases": [
+      "ARN"
+    ]
+  },
+  {
+    "id": "ase-aspen-pitkin-county-airport",
+    "code": "ASE",
+    "name": "Aspen/Pitkin County Airport",
+    "aliases": [
+      "ASE"
+    ]
+  },
+  {
+    "id": "atl-hartsfield-jackson-atlanta-international",
+    "code": "ATL",
+    "name": "Hartsfield-Jackson Atlanta International",
+    "aliases": [
+      "ATL"
+    ]
+  },
+  {
+    "id": "atw-appleton-international-airport",
+    "code": "ATW",
+    "name": "Appleton International Airport",
+    "aliases": [
+      "ATW"
+    ]
+  },
+  {
+    "id": "aus-austin-bergstrom-international",
+    "code": "AUS",
+    "name": "Austin Bergstrom International",
+    "aliases": [
+      "AUS"
+    ]
+  },
+  {
+    "id": "aza-mesa-gateway-airport",
+    "code": "AZA",
+    "name": "Mesa Gateway Airport",
+    "aliases": [
+      "AZA"
+    ]
+  },
+  {
+    "id": "azi-al-bateen-executive-airport",
+    "code": "AZI",
+    "name": "Al Bateen Executive Airport",
+    "aliases": [
+      "AZI"
+    ]
+  },
+  {
+    "id": "bah-bahrain-international-airport",
+    "code": "BAH",
+    "name": "Bahrain International Airport",
+    "aliases": [
+      "BAH"
+    ]
+  },
+  {
+    "id": "bdl-bradley-international-airport-schoephoester-road-windsor-locks-ct",
+    "code": "BDL",
+    "name": "Bradley International Airport, Schoephoester Road, Windsor Locks, CT",
+    "aliases": [
+      "BDL"
+    ]
+  },
+  {
+    "id": "bed-laurence-g-hanscom-field-bedford-massachusetts",
+    "code": "BED",
+    "name": "Laurence G. Hanscom Field, Bedford, Massachusetts",
+    "aliases": [
+      "BED"
+    ]
+  },
+  {
+    "id": "bet-bethel-airport",
+    "code": "BET",
+    "name": "Bethel Airport",
+    "aliases": [
+      "BET"
+    ]
+  },
+  {
+    "id": "bfi-king-county-international-airport-boeing-field",
+    "code": "BFI",
+    "name": "King County International Airport - Boeing Field",
+    "aliases": [
+      "BFI"
+    ]
+  },
+  {
+    "id": "bfs-belfast-international-airport",
+    "code": "BFS",
+    "name": "Belfast international Airport",
+    "aliases": [
+      "BFS"
+    ]
+  },
+  {
+    "id": "bgi-grantley-adams-international-airport",
+    "code": "BGI",
+    "name": "Grantley Adams International Airport",
+    "aliases": [
+      "BGI"
+    ]
+  },
+  {
+    "id": "bgm-greater-binghamton-edwin-a-link-field",
+    "code": "BGM",
+    "name": "Greater Binghamton/Edwin A Link field",
+    "aliases": [
+      "BGM"
+    ]
+  },
+  {
+    "id": "bgr-bangor-international-airport",
+    "code": "BGR",
+    "name": "Bangor International Airport",
+    "aliases": [
+      "BGR"
+    ]
+  },
+  {
+    "id": "bgy-orio-al-serio-international-airport",
+    "code": "BGY",
+    "name": "Orio al Serio International Airport",
+    "aliases": [
+      "BGY"
+    ]
+  },
+  {
+    "id": "bhm-birmingham-shuttlesworth-international-airport",
+    "code": "BHM",
+    "name": "Birmingham-Shuttlesworth International Airport",
+    "aliases": [
+      "BHM"
+    ]
+  },
+  {
+    "id": "bhx-birmingham-airport",
+    "code": "BHX",
+    "name": "Birmingham Airport",
+    "aliases": [
+      "BHX"
+    ]
+  },
+  {
+    "id": "bks-fatmawati-soekarno-airport",
+    "code": "BKS",
+    "name": "Fatmawati Soekarno Airport",
+    "aliases": [
+      "BKS"
+    ]
+  },
+  {
+    "id": "bll-billund-airport",
+    "code": "BLL",
+    "name": "Billund Airport",
+    "aliases": [
+      "BLL"
+    ]
+  },
+  {
+    "id": "bmi-central-illinois-regional-airport-at-bloomington-normal",
+    "code": "BMI",
+    "name": "Central Illinois Regional Airport at Bloomington-Normal",
+    "aliases": [
+      "BMI"
+    ]
+  },
+  {
+    "id": "bna-nashville-international",
+    "code": "BNA",
+    "name": "Nashville International",
+    "aliases": [
+      "BNA"
+    ]
+  },
+  {
+    "id": "bne-brisbane-international-australia",
+    "code": "BNE",
+    "name": "Brisbane International, Australia",
+    "aliases": [
+      "BNE"
+    ]
+  },
+  {
+    "id": "boi-boise-airport",
+    "code": "BOI",
+    "name": "Boise Airport",
+    "aliases": [
+      "BOI"
+    ]
+  },
+  {
+    "id": "bom-chhatrapati-shivaji-international-airport",
+    "code": "BOM",
+    "name": "Chhatrapati Shivaji International Airport",
+    "aliases": [
+      "BOM"
+    ]
+  },
+  {
+    "id": "bos-boston-logan-international-airport",
+    "code": "BOS",
+    "name": "Boston Logan International Airport",
+    "aliases": [
+      "BOS"
+    ]
+  },
+  {
+    "id": "bpt-jack-brooks-regional-airport",
+    "code": "BPT",
+    "name": "Jack Brooks Regional Airport",
+    "aliases": [
+      "BPT"
+    ]
+  },
+  {
+    "id": "bqn-aeropuerto-internacional-rafael-hern-ndez",
+    "code": "BQN",
+    "name": "Aeropuerto Internacional Rafael Hernández",
+    "aliases": [
+      "BQN"
+    ]
+  },
+  {
+    "id": "brc-san-carlos-de-bariloche-airport",
+    "code": "BRC",
+    "name": "San Carlos de Bariloche Airport",
+    "aliases": [
+      "BRC"
+    ]
+  },
+  {
+    "id": "brs-bristol-airport",
+    "code": "BRS",
+    "name": "Bristol Airport",
+    "aliases": [
+      "BRS"
+    ]
+  },
+  {
+    "id": "bru-brussels-zaatem",
+    "code": "BRU",
+    "name": "Brussels-Zaatem",
+    "aliases": [
+      "BRU"
+    ]
+  },
+  {
+    "id": "brw-wiley-post-will-rogers-memorial-airport",
+    "code": "BRW",
+    "name": "Wiley Post-Will Rogers Memorial Airport",
+    "aliases": [
+      "BRW"
+    ]
+  },
+  {
+    "id": "btr-baton-rouge-metropolitan-airport",
+    "code": "BTR",
+    "name": "Baton Rouge Metropolitan Airport",
+    "aliases": [
+      "BTR"
+    ]
+  },
+  {
+    "id": "btv-burlington-international-airport",
+    "code": "BTV",
+    "name": "Burlington International Airport",
+    "aliases": [
+      "BTV"
+    ]
+  },
+  {
+    "id": "buf-buffalo-niagara-international-airport",
+    "code": "BUF",
+    "name": "Buffalo Niagara International Airport",
+    "aliases": [
+      "BUF"
+    ]
+  },
+  {
+    "id": "bur-hollywood-burbank-airport",
+    "code": "BUR",
+    "name": "Hollywood Burbank Airport",
+    "aliases": [
+      "BUR"
+    ]
+  },
+  {
+    "id": "bwi-baltimore-washington-international-thurgood-marshall-airport",
+    "code": "BWI",
+    "name": "Baltimore/Washington International Thurgood Marshall Airport",
+    "aliases": [
+      "BWI"
+    ]
+  },
+  {
+    "id": "bzn-bozeman-yellowstone-international-airport",
+    "code": "BZN",
+    "name": "Bozeman Yellowstone International Airport",
+    "aliases": [
+      "BZN"
+    ]
+  },
+  {
+    "id": "cae-columbia-metropolitan-airport",
+    "code": "CAE",
+    "name": "Columbia Metropolitan Airport",
+    "aliases": [
+      "CAE"
+    ]
+  },
+  {
+    "id": "cag-cagliari-elmas-airport-sardinia-italy",
+    "code": "CAG",
+    "name": "Cagliari Elmas Airport, Sardinia, Italy",
+    "aliases": [
+      "CAG"
+    ]
+  },
+  {
+    "id": "ccu-netaji-subhash-chandra-bose-international-airport-west-bengal-india",
+    "code": "CCU",
+    "name": "Netaji Subhash Chandra Bose International Airport, West Bengal, India",
+    "aliases": [
+      "CCU"
+    ]
+  },
+  {
+    "id": "cdg-paris-charles-de-gaulle-airport",
+    "code": "CDG",
+    "name": "Paris Charles de Gaulle Airport",
+    "aliases": [
+      "CDG"
+    ]
+  },
+  {
+    "id": "cdu-camden-airport-new-south-wales-australia",
+    "code": "CDU",
+    "name": "Camden Airport, New South Wales, Australia",
+    "aliases": [
+      "CDU"
+    ]
+  },
+  {
+    "id": "cdv-merle-k-mudhole-smith-airport-mile-13-cordova-ak",
+    "code": "CDV",
+    "name": "Merle K. (Mudhole) Smith Airport, Mile 13, Cordova, AK",
+    "aliases": [
+      "CDV"
+    ]
+  },
+  {
+    "id": "cha-chattanooga-metropolitan-airport",
+    "code": "CHA",
+    "name": "Chattanooga Metropolitan Airport",
+    "aliases": [
+      "CHA"
+    ]
+  },
+  {
+    "id": "chq-chania-international-airport-ioannis-daskalogiannis-greece",
+    "code": "CHQ",
+    "name": "Chania International Airport Ioannis Daskalogiannis, Greece",
+    "aliases": [
+      "CHQ"
+    ]
+  },
+  {
+    "id": "chs-charleston-international-airport",
+    "code": "CHS",
+    "name": "Charleston International Airport",
+    "aliases": [
+      "CHS"
+    ]
+  },
+  {
+    "id": "cid-eastern-iowa-airport",
+    "code": "CID",
+    "name": "Eastern Iowa Airport",
+    "aliases": [
+      "CID"
+    ]
+  },
+  {
+    "id": "cju-jeju-international-airport-south-korea",
+    "code": "CJU",
+    "name": "Jeju International Airport, South Korea",
+    "aliases": [
+      "CJU"
+    ]
+  },
+  {
+    "id": "cle-cleveland-hopkins-international-airport",
+    "code": "CLE",
+    "name": "Cleveland Hopkins International Airport",
+    "aliases": [
+      "CLE"
+    ]
+  },
+  {
+    "id": "clt-charlotte-douglas-international-airport",
+    "code": "CLT",
+    "name": "Charlotte Douglas International Airport",
+    "aliases": [
+      "CLT"
+    ]
+  },
+  {
+    "id": "cmh-john-glenn-columbus-international-airport",
+    "code": "CMH",
+    "name": "John Glenn Columbus International Airport",
+    "aliases": [
+      "CMH"
+    ]
+  },
+  {
+    "id": "cmi-university-of-illinois-willard-airport",
+    "code": "CMI",
+    "name": "University of Illinois Willard Airport",
+    "aliases": [
+      "CMI"
+    ]
+  },
+  {
+    "id": "cos-colorado-springs-airport",
+    "code": "COS",
+    "name": "Colorado Springs Airport",
+    "aliases": [
+      "COS"
+    ]
+  },
+  {
+    "id": "cot-cotulla-la-salle-county-airport-cotulla-tx",
+    "code": "COT",
+    "name": "Cotulla-La Salle County Airport, Cotulla, TX",
+    "aliases": [
+      "COT"
+    ]
+  },
+  {
+    "id": "cph-copenhagen-airport-kastrup-copenhagen-denmark",
+    "code": "CPH",
+    "name": "Copenhagen Airport, Kastrup, Copenhagen, Denmark",
+    "aliases": [
+      "CPH"
+    ]
+  },
+  {
+    "id": "crp-corpus-christi-international-airport",
+    "code": "CRP",
+    "name": "Corpus Christi International Airport",
+    "aliases": [
+      "CRP"
+    ]
+  },
+  {
+    "id": "csm-clinton-sherman-airport",
+    "code": "CSM",
+    "name": "Clinton Sherman Airport",
+    "aliases": [
+      "CSM"
+    ]
+  },
+  {
+    "id": "cts-chitose-airport-bibi-chitose-hokkaido-japan",
+    "code": "CTS",
+    "name": "Chitose Airport, Bibi, Chitose, Hokkaido, Japan",
+    "aliases": [
+      "CTS"
+    ]
+  },
+  {
+    "id": "cun-cancun-international-airport-cancun-mexico",
+    "code": "CUN",
+    "name": "Cancun International Airport, Cancun, Mexico",
+    "aliases": [
+      "CUN"
+    ]
+  },
+  {
+    "id": "cvg-cincinnati-northern-kentucky-international-airport",
+    "code": "CVG",
+    "name": "Cincinnati/Northern Kentucky International Airport",
+    "aliases": [
+      "CVG"
+    ]
+  },
+  {
+    "id": "cwa-central-wisconsin-airport",
+    "code": "CWA",
+    "name": "Central Wisconsin Airport",
+    "aliases": [
+      "CWA"
+    ]
+  },
+  {
+    "id": "dac-dhaka-hazrat-shahjalal-international-airport",
+    "code": "DAC",
+    "name": "Dhaka Hazrat Shahjalal International Airport",
+    "aliases": [
+      "DAC"
+    ]
+  },
+  {
+    "id": "dal-dallas-love-field",
+    "code": "DAL",
+    "name": "Dallas Love Field",
+    "aliases": [
+      "DAL"
+    ]
+  },
+  {
+    "id": "day-james-m-cox-dayton-international-airport",
+    "code": "DAY",
+    "name": "James M Cox Dayton International Airport",
+    "aliases": [
+      "DAY"
+    ]
+  },
+  {
+    "id": "dca-ronald-reagan-washington-national-airport",
+    "code": "DCA",
+    "name": "Ronald Reagan Washington National Airport",
+    "aliases": [
+      "DCA"
+    ]
+  },
+  {
+    "id": "den-denver-international-airport",
+    "code": "DEN",
+    "name": "Denver International Airport",
+    "aliases": [
+      "DEN"
+    ]
+  },
+  {
+    "id": "dfw-dallas-fort-worth-international-airport",
+    "code": "DFW",
+    "name": "Dallas Fort Worth International Airport",
+    "aliases": [
+      "DFW"
+    ]
+  },
+  {
+    "id": "dlf-laughlin-afb-del-rio-texas-usa",
+    "code": "DLF",
+    "name": "Laughlin AFB, Del Rio, Texas, USA",
+    "aliases": [
+      "DLF"
+    ]
+  },
+  {
+    "id": "dlh-duluth-international-airport-duluth-mn",
+    "code": "DLH",
+    "name": "Duluth International Airport, Duluth, MN",
+    "aliases": [
+      "DLH"
+    ]
+  },
+  {
+    "id": "doh-doha-qatar-ad-dawhah",
+    "code": "DOH",
+    "name": "Doha, Qatar (Ad Dawhah)",
+    "aliases": [
+      "DOH"
+    ]
+  },
+  {
+    "id": "dpa-dupage-airport-west-chicago-illinois",
+    "code": "DPA",
+    "name": "DuPage Airport. West Chicago, Illinois",
+    "aliases": [
+      "DPA"
+    ]
+  },
+  {
+    "id": "dsm-des-moines-international-airport",
+    "code": "DSM",
+    "name": "Des Moines International Airport",
+    "aliases": [
+      "DSM"
+    ]
+  },
+  {
+    "id": "dtw-detroit-metropolitan-wayne-county-airport",
+    "code": "DTW",
+    "name": "Detroit Metropolitan Wayne County Airport",
+    "aliases": [
+      "DTW"
+    ]
+  },
+  {
+    "id": "dub-dublin-airport",
+    "code": "DUB",
+    "name": "Dublin Airport",
+    "aliases": [
+      "DUB"
+    ]
+  },
+  {
+    "id": "dwc-al-maktoum-international-airport",
+    "code": "DWC",
+    "name": "Al Maktoum International Airport",
+    "aliases": [
+      "DWC"
+    ]
+  },
+  {
+    "id": "dxb-dubai-international-airport",
+    "code": "DXB",
+    "name": "Dubai International Airport",
+    "aliases": [
+      "DXB"
+    ]
+  },
+  {
+    "id": "ebul-ursel-airport-uccle-belgium",
+    "code": "EBUL",
+    "name": "Ursel Airport, Uccle, Belgium",
+    "aliases": [
+      "EBUL"
+    ]
+  },
+  {
+    "id": "edi-edinburgh-airport",
+    "code": "EDI",
+    "name": "Edinburgh Airport",
+    "aliases": [
+      "EDI"
+    ]
+  },
+  {
+    "id": "efd-ellington-airport",
+    "code": "EFD",
+    "name": "Ellington Airport",
+    "aliases": [
+      "EFD"
+    ]
+  },
+  {
+    "id": "elp-el-paso-international-airport",
+    "code": "ELP",
+    "name": "El Paso International Airport",
+    "aliases": [
+      "ELP"
+    ]
+  },
+  {
+    "id": "ema-east-midlands-airport",
+    "code": "EMA",
+    "name": "East Midlands Airport",
+    "aliases": [
+      "EMA"
+    ]
+  },
+  {
+    "id": "eug-eugene-airport",
+    "code": "EUG",
+    "name": "Eugene Airport",
+    "aliases": [
+      "EUG"
+    ]
+  },
+  {
+    "id": "ewr-newark-liberty-international",
+    "code": "EWR",
+    "name": "Newark Liberty International",
+    "aliases": [
+      "EWR"
+    ]
+  },
+  {
+    "id": "eyw-key-west-international-airport",
+    "code": "EYW",
+    "name": "Key West International Airport",
+    "aliases": [
+      "EYW"
+    ]
+  },
+  {
+    "id": "eze-ezeiza-international-airport-ministro-pistarini",
+    "code": "EZE",
+    "name": "Ezeiza International Airport - Ministro Pistarini",
+    "aliases": [
+      "EZE"
+    ]
+  },
+  {
+    "id": "fai-fairbanks-international-airport-fairbanks-alaska",
+    "code": "FAI",
+    "name": "Fairbanks International Airport, Fairbanks, Alaska",
+    "aliases": [
+      "FAI"
+    ]
+  },
+  {
+    "id": "far-hector-international-airport",
+    "code": "FAR",
+    "name": "Hector International Airport",
+    "aliases": [
+      "FAR"
+    ]
+  },
+  {
+    "id": "fat-fresno-yosemite-international",
+    "code": "FAT",
+    "name": "Fresno Yosemite International",
+    "aliases": [
+      "FAT"
+    ]
+  },
+  {
+    "id": "fco-leonardo-da-vinci-fiumicino-airport",
+    "code": "FCO",
+    "name": "Leonardo da Vinci-Fiumicino Airport",
+    "aliases": [
+      "FCO"
+    ]
+  },
+  {
+    "id": "fll-fort-lauderdale-hollywood-international-airport",
+    "code": "FLL",
+    "name": "Fort Lauderdale-Hollywood International Airport",
+    "aliases": [
+      "FLL"
+    ]
+  },
+  {
+    "id": "fnt-bishop-international-airport",
+    "code": "FNT",
+    "name": "Bishop International Airport",
+    "aliases": [
+      "FNT"
+    ]
+  },
+  {
+    "id": "foc-fuzhou-changle-international-airport",
+    "code": "FOC",
+    "name": "Fuzhou Changle International Airport",
+    "aliases": [
+      "FOC"
+    ]
+  },
+  {
+    "id": "fra-frankfurt-airport",
+    "code": "FRA",
+    "name": "Frankfurt Airport",
+    "aliases": [
+      "FRA"
+    ]
+  },
+  {
+    "id": "fsd-sioux-falls-regional-airport",
+    "code": "FSD",
+    "name": "Sioux Falls Regional Airport",
+    "aliases": [
+      "FSD"
+    ]
+  },
+  {
+    "id": "ftw-fort-worth-meacham-international-airport",
+    "code": "FTW",
+    "name": "Fort Worth Meacham International Airport",
+    "aliases": [
+      "FTW"
+    ]
+  },
+  {
+    "id": "geg-spokane-international-airport-geiger-army-airfield",
+    "code": "GEG",
+    "name": "Spokane International Airport Geiger Army Airfield",
+    "aliases": [
+      "GEG"
+    ]
+  },
+  {
+    "id": "gfk-grand-forks-international-airport-north-dakota",
+    "code": "GFK",
+    "name": "Grand Forks International Airport, North Dakota",
+    "aliases": [
+      "GFK"
+    ]
+  },
+  {
+    "id": "gjt-grand-junction-regional-airport",
+    "code": "GJT",
+    "name": "Grand Junction Regional Airport",
+    "aliases": [
+      "GJT"
+    ]
+  },
+  {
+    "id": "gla-glasgow-international-airport",
+    "code": "GLA",
+    "name": "Glasgow International Airport",
+    "aliases": [
+      "GLA"
+    ]
+  },
+  {
+    "id": "gnv-gainesville-regional-airport-gainesville-florida",
+    "code": "GNV",
+    "name": "Gainesville Regional Airport, Gainesville, Florida",
+    "aliases": [
+      "GNV"
+    ]
+  },
+  {
+    "id": "got-gothenburg-landvetter-airport",
+    "code": "GOT",
+    "name": "Gothenburg-Landvetter Airport",
+    "aliases": [
+      "GOT"
+    ]
+  },
+  {
+    "id": "grb-green-bay-austin-straubel-international-airport",
+    "code": "GRB",
+    "name": "Green Bay Austin Straubel International Airport",
+    "aliases": [
+      "GRB"
+    ]
+  },
+  {
+    "id": "grr-gerald-r-ford-international-airport",
+    "code": "GRR",
+    "name": "Gerald R. Ford International Airport",
+    "aliases": [
+      "GRR"
+    ]
+  },
+  {
+    "id": "gso-greensboro-piedmont",
+    "code": "GSO",
+    "name": "Greensboro Piedmont",
+    "aliases": [
+      "GSO"
+    ]
+  },
+  {
+    "id": "gsp-greenville-spartanburg-international-airport",
+    "code": "GSP",
+    "name": "Greenville-Spartanburg International Airport",
+    "aliases": [
+      "GSP"
+    ]
+  },
+  {
+    "id": "gva-geneva-international-aiport",
+    "code": "GVA",
+    "name": "Geneva International Aiport",
+    "aliases": [
+      "GVA"
+    ]
+  },
+  {
+    "id": "haj-hannover-airport",
+    "code": "HAJ",
+    "name": "Hannover Airport",
+    "aliases": [
+      "HAJ"
+    ]
+  },
+  {
+    "id": "has-hail-international-airport",
+    "code": "HAS",
+    "name": "Hail International Airport",
+    "aliases": [
+      "HAS"
+    ]
+  },
+  {
+    "id": "hbr-hobart-aviacao-airport-sao-paulo-brazil",
+    "code": "HBR",
+    "name": "Hobart Aviacao Airport, Sao Paulo, Brazil",
+    "aliases": [
+      "HBR"
+    ]
+  },
+  {
+    "id": "hdn-yampa-valley-airport",
+    "code": "HDN",
+    "name": "Yampa Valley Airport",
+    "aliases": [
+      "HDN"
+    ]
+  },
+  {
+    "id": "hfe-hefei-xinqiao-international-airport-luogang-hefei-anhui-province-china",
+    "code": "HFE",
+    "name": "Hefei Xinqiao International Airport (LUOGANG), Hefei, Anhui Province, China",
+    "aliases": [
+      "HFE"
+    ]
+  },
+  {
+    "id": "hkg-hong-kong-international-airport",
+    "code": "HKG",
+    "name": "Hong Kong International Airport",
+    "aliases": [
+      "HKG"
+    ]
+  },
+  {
+    "id": "hln-helena-regional-airport-montana",
+    "code": "HLN",
+    "name": "Helena Regional Airport, Montana",
+    "aliases": [
+      "HLN"
+    ]
+  },
+  {
+    "id": "hnd-tokyo-international-haneda-airport",
+    "code": "HND",
+    "name": "Tokyo International Haneda Airport",
+    "aliases": [
+      "HND"
+    ]
+  },
+  {
+    "id": "hnl-daniel-k-inouye-international-airport",
+    "code": "HNL",
+    "name": "Daniel K. Inouye International Airport",
+    "aliases": [
+      "HNL"
+    ]
+  },
+  {
+    "id": "hou-houston-william-p-hobby",
+    "code": "HOU",
+    "name": "Houston - William P. Hobby",
+    "aliases": [
+      "HOU"
+    ]
+  },
+  {
+    "id": "hsv-huntsville-international-airport",
+    "code": "HSV",
+    "name": "Huntsville International Airport",
+    "aliases": [
+      "HSV"
+    ]
+  },
+  {
+    "id": "hua-redstone-army-air-field-huntsville-alabama",
+    "code": "HUA",
+    "name": "Redstone Army Air Field, Huntsville, Alabama",
+    "aliases": [
+      "HUA"
+    ]
+  },
+  {
+    "id": "huf-terre-haute-regional-airport-581-south-airport-street-terre-haute-indiana",
+    "code": "HUF",
+    "name": "Terre Haute Regional Airport, 581 South Airport Street, Terre Haute, Indiana",
+    "aliases": [
+      "HUF"
+    ]
+  },
+  {
+    "id": "hyd-rajiv-gandhi-international-airport-shamshabad-hyderabad-telangana-india",
+    "code": "HYD",
+    "name": "Rajiv Gandhi International Airport, Shamshabad, Hyderabad, Telangana, India",
+    "aliases": [
+      "HYD"
+    ]
+  },
+  {
+    "id": "iad-dulles-international-airport",
+    "code": "IAD",
+    "name": "Dulles International Airport",
+    "aliases": [
+      "IAD"
+    ]
+  },
+  {
+    "id": "iah-houston-george-h-w-bush-intercontinental",
+    "code": "IAH",
+    "name": "Houston - George H. W. Bush Intercontinental",
+    "aliases": [
+      "IAH"
+    ]
+  },
+  {
+    "id": "icn-incheon-international-airport",
+    "code": "ICN",
+    "name": "Incheon International Airport",
+    "aliases": [
+      "ICN"
+    ]
+  },
+  {
+    "id": "ict-wichita-dwight-d-eisenhower-national-airport",
+    "code": "ICT",
+    "name": "Wichita Dwight D. Eisenhower National Airport",
+    "aliases": [
+      "ICT"
+    ]
+  },
+  {
+    "id": "ikk-greater-kankakee-airport-ikk-813-east-4000-south-road-kankakee-il",
+    "code": "IKK",
+    "name": "Greater Kankakee Airport-IKK, 813 East 4000 South Road, Kankakee, IL",
+    "aliases": [
+      "IKK"
+    ]
+  },
+  {
+    "id": "ilm-wilmington-international-airport",
+    "code": "ILM",
+    "name": "Wilmington International Airport",
+    "aliases": [
+      "ILM"
+    ]
+  },
+  {
+    "id": "iln-wilmington-air-park",
+    "code": "ILN",
+    "name": "Wilmington Air Park",
+    "aliases": [
+      "ILN"
+    ]
+  },
+  {
+    "id": "ind-indianapolis-international-airport",
+    "code": "IND",
+    "name": "Indianapolis International Airport",
+    "aliases": [
+      "IND"
+    ]
+  },
+  {
+    "id": "int-smith-reynolds-airport-3801-north-liberty-street-204-winston-salem-nc",
+    "code": "INT",
+    "name": "Smith Reynolds Airport, 3801 North Liberty Street #204, Winston-Salem, NC",
+    "aliases": [
+      "INT"
+    ]
+  },
+  {
+    "id": "iops-site-record-for-tracking-application-activity-through-our-tag-observations",
+    "code": "iOPS",
+    "name": "Site record for tracking application activity through our tag observations.",
+    "aliases": [
+      "iOPS"
+    ]
+  },
+  {
+    "id": "isp-long-island-macarthur-airport-100-arrival-avenue-ronkonkoma-ny",
+    "code": "ISP",
+    "name": "Long Island MacArthur Airport, 100 Arrival Avenue, Ronkonkoma, NY",
+    "aliases": [
+      "ISP"
+    ]
+  },
+  {
+    "id": "ist-istanbul-airport-tayakadin-terminal-caddesi-no-1-arnavutk-y-istanbul-t-rkiye",
+    "code": "IST",
+    "name": "Istanbul Airport, Tayakadin, Terminal Caddesi No:1, Arnavutköy/Istanbul, Türkiye",
+    "aliases": [
+      "IST"
+    ]
+  },
+  {
+    "id": "ito-hilo-international-airport-hilo-hawaii",
+    "code": "ITO",
+    "name": "Hilo International Airport, Hilo, Hawaii",
+    "aliases": [
+      "ITO"
+    ]
+  },
+  {
+    "id": "jac-jackson-hole-airport-jackson-hole-wyoming",
+    "code": "JAC",
+    "name": "Jackson Hole Airport, Jackson Hole, Wyoming",
+    "aliases": [
+      "JAC"
+    ]
+  },
+  {
+    "id": "jan-jackson-medgar-wiley-evers-international-airport",
+    "code": "JAN",
+    "name": "Jackson-Medgar Wiley Evers International Airport",
+    "aliases": [
+      "JAN"
+    ]
+  },
+  {
+    "id": "jax-jacksonville-international-airport",
+    "code": "JAX",
+    "name": "Jacksonville International Airport",
+    "aliases": [
+      "JAX"
+    ]
+  },
+  {
+    "id": "jfk-john-f-kennedy-international-new-york-city",
+    "code": "JFK",
+    "name": "John F. Kennedy International - New York City",
+    "aliases": [
+      "JFK"
+    ]
+  },
+  {
+    "id": "jnu-juneau-international-airport-juneau-alaska",
+    "code": "JNU",
+    "name": "Juneau International Airport, Juneau, Alaska",
+    "aliases": [
+      "JNU"
+    ]
+  },
+  {
+    "id": "kix-kansai-international-airport",
+    "code": "KIX",
+    "name": "Kansai International Airport",
+    "aliases": [
+      "KIX"
+    ]
+  },
+  {
+    "id": "koa-ellison-onizuka-kona-international-airport-kailua-kona-hawaii",
+    "code": "KOA",
+    "name": "Ellison Onizuka Kona International Airport, Kailua-Kona, Hawaii",
+    "aliases": [
+      "KOA"
+    ]
+  },
+  {
+    "id": "ktn-ketchikan-international-airport-ktn-1000-airport-terminal-building-ketchikan-alaska",
+    "code": "KTN",
+    "name": "Ketchikan International Airport (KTN), 1000 Airport Terminal Building, Ketchikan, Alaska",
+    "aliases": [
+      "KTN"
+    ]
+  },
+  {
+    "id": "ktw-katowice-airport",
+    "code": "KTW",
+    "name": "Katowice Airport",
+    "aliases": [
+      "KTW"
+    ]
+  },
+  {
+    "id": "lan-capital-region-international-airport",
+    "code": "LAN",
+    "name": "Capital Region International Airport",
+    "aliases": [
+      "LAN"
+    ]
+  },
+  {
+    "id": "las-mccarran-international",
+    "code": "LAS",
+    "name": "McCarran International",
+    "aliases": [
+      "LAS"
+    ]
+  },
+  {
+    "id": "lax-los-angeles-international",
+    "code": "LAX",
+    "name": "Los Angeles International",
+    "aliases": [
+      "LAX"
+    ]
+  },
+  {
+    "id": "lbb-lubbock-preston-smith-international-airport",
+    "code": "LBB",
+    "name": "Lubbock Preston Smith International Airport",
+    "aliases": [
+      "LBB"
+    ]
+  },
+  {
+    "id": "lck-rickenbacker-international-airport-columbus-oh",
+    "code": "LCK",
+    "name": "Rickenbacker International Airport, Columbus, OH",
+    "aliases": [
+      "LCK"
+    ]
+  },
+  {
+    "id": "lex-blue-grass-airport-4000-terminal-drive-lexington-ky-40510",
+    "code": "LEX",
+    "name": "Blue Grass Airport, 4000 TERMINAL DRIVE, LEXINGTON, KY 40510 \\",
+    "aliases": [
+      "LEX"
+    ]
+  },
+  {
+    "id": "lga-laguardia-airport-new-york",
+    "code": "LGA",
+    "name": "LaGuardia Airport, New York",
+    "aliases": [
+      "LGA"
+    ]
+  },
+  {
+    "id": "lgb-long-beach-airport",
+    "code": "LGB",
+    "name": "Long Beach Airport",
+    "aliases": [
+      "LGB"
+    ]
+  },
+  {
+    "id": "lgg-li-ge-airport-belgium",
+    "code": "LGG",
+    "name": "Liège Airport, Belgium",
+    "aliases": [
+      "LGG"
+    ]
+  },
+  {
+    "id": "lhr-heathrow-airport",
+    "code": "LHR",
+    "name": "Heathrow Airport",
+    "aliases": [
+      "LHR"
+    ]
+  },
+  {
+    "id": "lin-milan-linate-airport-milan-italy",
+    "code": "LIN",
+    "name": "Milan Linate Airport, Milan, Italy",
+    "aliases": [
+      "LIN"
+    ]
+  },
+  {
+    "id": "lit-clinton-national-airport",
+    "code": "LIT",
+    "name": "Clinton National Airport",
+    "aliases": [
+      "LIT"
+    ]
+  },
+  {
+    "id": "lju-ljubljana-airport-aerodrom-slovenia",
+    "code": "LJU",
+    "name": "Ljubljana Airport, Aerodrom, Slovenia",
+    "aliases": [
+      "LJU"
+    ]
+  },
+  {
+    "id": "lla-lule-airport-kallax-lule-sweden",
+    "code": "LLA",
+    "name": "Luleå Airport (Kallax), Luleå, Sweden",
+    "aliases": [
+      "LLA"
+    ]
+  },
+  {
+    "id": "llek-tel-nov",
+    "code": "LLEK",
+    "name": "TEL NOV",
+    "aliases": [
+      "LLEK"
+    ]
+  },
+  {
+    "id": "llhs-hatzor-air-base-israel",
+    "code": "LLHS",
+    "name": "Hatzor Air Base, Israel",
+    "aliases": [
+      "LLHS"
+    ]
+  },
+  {
+    "id": "llnv-nevatim-air-base-llnv-israel",
+    "code": "LLNV",
+    "name": "Nevatim Air Base (LLNV), Israel",
+    "aliases": [
+      "LLNV"
+    ]
+  },
+  {
+    "id": "ltbq-cengiz-topel-airport-emekevler-d100-no-268-kartepe-kocaeli-t-rkiye",
+    "code": "LTBQ",
+    "name": "Cengiz Topel Airport, Emekevler, D100 No: 268, Kartepe/Kocaeli, Türkiye",
+    "aliases": [
+      "LTBQ"
+    ]
+  },
+  {
+    "id": "ltbx-istanbul-samandira-army-air-base-istanbul-turkey",
+    "code": "LTBX",
+    "name": "Istanbul Samandira Army Air Base), Istanbul, Turkey",
+    "aliases": [
+      "LTBX"
+    ]
+  },
+  {
+    "id": "ltn-london-luton-airport-london-england",
+    "code": "LTN",
+    "name": "London Luton Airport, London, England",
+    "aliases": [
+      "LTN"
+    ]
+  },
+  {
+    "id": "lys-lyon-airport",
+    "code": "LYS",
+    "name": "Lyon Airport",
+    "aliases": [
+      "LYS"
+    ]
+  },
+  {
+    "id": "maa-chennai-international-airport",
+    "code": "MAA",
+    "name": "Chennai International Airport",
+    "aliases": [
+      "MAA"
+    ]
+  },
+  {
+    "id": "mad-adolfo-su-rez-madrid-barajas-airport-madrid-spain",
+    "code": "MAD",
+    "name": "Adolfo Suárez Madrid-Barajas Airport, Madrid, Spain",
+    "aliases": [
+      "MAD"
+    ]
+  },
+  {
+    "id": "maf-midland-international-air-and-space-port",
+    "code": "MAF",
+    "name": "Midland International Air & Space Port",
+    "aliases": [
+      "MAF"
+    ]
+  },
+  {
+    "id": "man-manchester-airport",
+    "code": "MAN",
+    "name": "Manchester Airport",
+    "aliases": [
+      "MAN"
+    ]
+  },
+  {
+    "id": "mci-kansas-city-international-airport",
+    "code": "MCI",
+    "name": "Kansas City International Airport",
+    "aliases": [
+      "MCI"
+    ]
+  },
+  {
+    "id": "mco-orlando-international-airport",
+    "code": "MCO",
+    "name": "Orlando International Airport",
+    "aliases": [
+      "MCO"
+    ]
+  },
+  {
+    "id": "mdw-chicago-midway-international-airport",
+    "code": "MDW",
+    "name": "Chicago Midway International Airport",
+    "aliases": [
+      "MDW"
+    ]
+  },
+  {
+    "id": "mel-melbourne-airport",
+    "code": "MEL",
+    "name": "Melbourne Airport",
+    "aliases": [
+      "MEL"
+    ]
+  },
+  {
+    "id": "mem-memphis-international-airport",
+    "code": "MEM",
+    "name": "Memphis International Airport",
+    "aliases": [
+      "MEM"
+    ]
+  },
+  {
+    "id": "mex-mexico-city-international-airport",
+    "code": "MEX",
+    "name": "Mexico City International Airport",
+    "aliases": [
+      "MEX"
+    ]
+  },
+  {
+    "id": "mhr-sacramento-mather-airport",
+    "code": "MHR",
+    "name": "Sacramento Mather Airport",
+    "aliases": [
+      "MHR"
+    ]
+  },
+  {
+    "id": "mht-manchester-boston-regional-airport",
+    "code": "MHT",
+    "name": "Manchester-Boston Regional Airport",
+    "aliases": [
+      "MHT"
+    ]
+  },
+  {
+    "id": "mia-miami-international-airport",
+    "code": "MIA",
+    "name": "Miami International Airport",
+    "aliases": [
+      "MIA"
+    ]
+  },
+  {
+    "id": "mke-milwaukee-mitchell-international-airport",
+    "code": "MKE",
+    "name": "Milwaukee Mitchell International Airport",
+    "aliases": [
+      "MKE"
+    ]
+  },
+  {
+    "id": "mky-mackay-airport-queensland-australia",
+    "code": "MKY",
+    "name": "Mackay Airport, Queensland, Australia",
+    "aliases": [
+      "MKY"
+    ]
+  },
+  {
+    "id": "mlh-euroairport-basel-mulhouse-freiburg-saint-louis-france",
+    "code": "MLH",
+    "name": "EuroAirport Basel-Mulhouse-Freiburg, Saint Louis, France",
+    "aliases": [
+      "MLH"
+    ]
+  },
+  {
+    "id": "mnl-ninoy-aquino-international-airport",
+    "code": "MNL",
+    "name": "Ninoy Aquino International Airport",
+    "aliases": [
+      "MNL"
+    ]
+  },
+  {
+    "id": "mrs-marseille-provence-airport",
+    "code": "MRS",
+    "name": "Marseille Provence Airport",
+    "aliases": [
+      "MRS"
+    ]
+  },
+  {
+    "id": "mso-missoula-montana-airport",
+    "code": "MSO",
+    "name": "Missoula Montana Airport",
+    "aliases": [
+      "MSO"
+    ]
+  },
+  {
+    "id": "msp-minneapolis-saint-paul-international-airport",
+    "code": "MSP",
+    "name": "Minneapolis-Saint Paul International Airport",
+    "aliases": [
+      "MSP"
+    ]
+  },
+  {
+    "id": "msy-louis-armstrong-new-orleans-international-airport",
+    "code": "MSY",
+    "name": "Louis Armstrong New Orleans International Airport",
+    "aliases": [
+      "MSY"
+    ]
+  },
+  {
+    "id": "muc-munich-international-airport",
+    "code": "MUC",
+    "name": "Munich International Airport",
+    "aliases": [
+      "MUC"
+    ]
+  },
+  {
+    "id": "mwh-grant-county-international-airport",
+    "code": "MWH",
+    "name": "Grant County International Airport",
+    "aliases": [
+      "MWH"
+    ]
+  },
+  {
+    "id": "mxp-milano-malpensa-airport",
+    "code": "MXP",
+    "name": "Milano Malpensa Airport",
+    "aliases": [
+      "MXP"
+    ]
+  },
+  {
+    "id": "myr-myrtle-beach-international-airport-1100-jetport-road-myrtle-beach-sc",
+    "code": "MYR",
+    "name": "Myrtle Beach International Airport, 1100 Jetport Road, Myrtle Beach, SC",
+    "aliases": [
+      "MYR"
+    ]
+  },
+  {
+    "id": "nan-nadi-international-airport",
+    "code": "NAN",
+    "name": "Nadi International Airport",
+    "aliases": [
+      "NAN"
+    ]
+  },
+  {
+    "id": "nas-lynden-pindling-international-airport",
+    "code": "NAS",
+    "name": "Lynden Pindling International Airport",
+    "aliases": [
+      "NAS"
+    ]
+  },
+  {
+    "id": "ncl-newcastle-international-airport",
+    "code": "NCL",
+    "name": "Newcastle International Airport",
+    "aliases": [
+      "NCL"
+    ]
+  },
+  {
+    "id": "nix-nioro-airport-mali",
+    "code": "NIX",
+    "name": "Nioro Airport, Mali",
+    "aliases": [
+      "NIX"
+    ]
+  },
+  {
+    "id": "nlu-felipe-ngeles-international-airport",
+    "code": "NLU",
+    "name": "Felipe Ángeles International Airport",
+    "aliases": [
+      "NLU"
+    ]
+  },
+  {
+    "id": "nrt-narita-international-airport",
+    "code": "NRT",
+    "name": "Narita International Airport",
+    "aliases": [
+      "NRT"
+    ]
+  },
+  {
+    "id": "ntu-oceana-naval-air-station-apollo-soucek-field-virginia-beach-va",
+    "code": "NTU",
+    "name": "Oceana Naval Air Station (Apollo Soucek Field), Virginia Beach, VA",
+    "aliases": [
+      "NTU"
+    ]
+  },
+  {
+    "id": "nue-nuremberg-airport",
+    "code": "NUE",
+    "name": "Nuremberg Airport",
+    "aliases": [
+      "NUE"
+    ]
+  },
+  {
+    "id": "nuq-moffett-federal-airfield",
+    "code": "NUQ",
+    "name": "Moffett Federal Airfield",
+    "aliases": [
+      "NUQ"
+    ]
+  },
+  {
+    "id": "oak-oakland-international",
+    "code": "OAK",
+    "name": "Oakland International",
+    "aliases": [
+      "OAK"
+    ]
+  },
+  {
+    "id": "okc-will-rogers-international-airport",
+    "code": "OKC",
+    "name": "Will Rogers International Airport",
+    "aliases": [
+      "OKC"
+    ]
+  },
+  {
+    "id": "oma-eppley-airfield-omaha-nebraska",
+    "code": "OMA",
+    "name": "Eppley Airfield, Omaha, Nebraska",
+    "aliases": [
+      "OMA"
+    ]
+  },
+  {
+    "id": "ome-nome-airport",
+    "code": "OME",
+    "name": "Nome Airport",
+    "aliases": [
+      "OME"
+    ]
+  },
+  {
+    "id": "ont-ontario-international-airport",
+    "code": "ONT",
+    "name": "Ontario International Airport",
+    "aliases": [
+      "ONT"
+    ]
+  },
+  {
+    "id": "onx-enrique-adolfo-jimenez-airport",
+    "code": "ONX",
+    "name": "Enrique Adolfo Jimenez Airport",
+    "aliases": [
+      "ONX"
+    ]
+  },
+  {
+    "id": "opf-miami-opa-locka-executive-airport-14201-northwest-42nd-avenue-opa-locka-fl",
+    "code": "OPF",
+    "name": "Miami-Opa Locka Executive Airport, 14201 Northwest 42nd Avenue, Opa-locka, FL",
+    "aliases": [
+      "OPF"
+    ]
+  },
+  {
+    "id": "ord-chicago-o-hare-international-airport",
+    "code": "ORD",
+    "name": "Chicago O'Hare International Airport",
+    "aliases": [
+      "ORD"
+    ]
+  },
+  {
+    "id": "orf-norfolk-international-airport",
+    "code": "ORF",
+    "name": "Norfolk International Airport",
+    "aliases": [
+      "ORF"
+    ]
+  },
+  {
+    "id": "orl-orlando-executive-airport",
+    "code": "ORL",
+    "name": "Orlando Executive Airport",
+    "aliases": [
+      "ORL"
+    ]
+  },
+  {
+    "id": "otz-ralph-wien-memorial-airport-kotzebue-alaska",
+    "code": "OTZ",
+    "name": "Ralph Wien Memorial Airport, Kotzebue, Alaska",
+    "aliases": [
+      "OTZ"
+    ]
+  },
+  {
+    "id": "pac-marcos-a-gelabert-international-airport-marcos-a-gelabert-panama-city-panama",
+    "code": "PAC",
+    "name": "Marcos A. Gelabert International Airport, Marcos a Gelabert, Panama City, Panama",
+    "aliases": [
+      "PAC"
+    ]
+  },
+  {
+    "id": "pae-paine-field-airport",
+    "code": "PAE",
+    "name": "Paine Field Airport",
+    "aliases": [
+      "PAE"
+    ]
+  },
+  {
+    "id": "pap-toussaint-louverture-international-airport",
+    "code": "PAP",
+    "name": "Toussaint Louverture International Airport",
+    "aliases": [
+      "PAP"
+    ]
+  },
+  {
+    "id": "pbi-palm-beach-international-airport",
+    "code": "PBI",
+    "name": "Palm Beach International Airport",
+    "aliases": [
+      "PBI"
+    ]
+  },
+  {
+    "id": "pdx-portland-international",
+    "code": "PDX",
+    "name": "Portland International",
+    "aliases": [
+      "PDX"
+    ]
+  },
+  {
+    "id": "pen-penang-international-airport",
+    "code": "PEN",
+    "name": "Penang International Airport",
+    "aliases": [
+      "PEN"
+    ]
+  },
+  {
+    "id": "per-perth-international-australia",
+    "code": "PER",
+    "name": "Perth International, Australia",
+    "aliases": [
+      "PER"
+    ]
+  },
+  {
+    "id": "phl-philadelphia-international-airport",
+    "code": "PHL",
+    "name": "Philadelphia International Airport",
+    "aliases": [
+      "PHL"
+    ]
+  },
+  {
+    "id": "phx-phoenix-sky-harbor-international",
+    "code": "PHX",
+    "name": "Phoenix Sky Harbor International",
+    "aliases": [
+      "PHX"
+    ]
+  },
+  {
+    "id": "pia-general-wayne-a-downing-peoria-international-airport",
+    "code": "PIA",
+    "name": "General Wayne A. Downing Peoria International Airport",
+    "aliases": [
+      "PIA"
+    ]
+  },
+  {
+    "id": "pit-pittsburgh-international-airport",
+    "code": "PIT",
+    "name": "Pittsburgh International Airport",
+    "aliases": [
+      "PIT"
+    ]
+  },
+  {
+    "id": "pkc-petropavlovsk-kamchatsky-airport-ulitsa-zvezdnaya-1-yelizovo-kamchatka-krai-russia",
+    "code": "PKC",
+    "name": "Petropavlovsk-Kamchatsky Airport, Ulitsa Zvezdnaya, 1, Yelizovo, Kamchatka Krai, Russia",
+    "aliases": [
+      "PKC"
+    ]
+  },
+  {
+    "id": "pns-pensacola-international-airport",
+    "code": "PNS",
+    "name": "Pensacola International Airport",
+    "aliases": [
+      "PNS"
+    ]
+  },
+  {
+    "id": "pob-pope-field-pob-in-north-carolina",
+    "code": "POB",
+    "name": "Pope Field (POB) in North Carolina",
+    "aliases": [
+      "POB"
+    ]
+  },
+  {
+    "id": "prg-v-clav-havel-airport-prague-ruzyne-prague-czechia",
+    "code": "PRG",
+    "name": "Václav Havel Airport Prague (Ruzyne), Prague, Czechia",
+    "aliases": [
+      "PRG"
+    ]
+  },
+  {
+    "id": "ptp-pointe-pitre-international-airport-morne-mamiel-les-abymes-guadeloupe",
+    "code": "PTP",
+    "name": "Pointe-à-Pitre International Airport, Morne Mamiel, Les Abymes, Guadeloupe",
+    "aliases": [
+      "PTP"
+    ]
+  },
+  {
+    "id": "pty-panama-city-panama",
+    "code": "PTY",
+    "name": "Panama City, Panama",
+    "aliases": [
+      "PTY"
+    ]
+  },
+  {
+    "id": "pus-gimhae-international-airport",
+    "code": "PUS",
+    "name": "Gimhae International Airport",
+    "aliases": [
+      "PUS"
+    ]
+  },
+  {
+    "id": "pwm-portland-international-jetport",
+    "code": "PWM",
+    "name": "Portland International Jetport",
+    "aliases": [
+      "PWM"
+    ]
+  },
+  {
+    "id": "rdu-raleigh-durham-international",
+    "code": "RDU",
+    "name": "Raleigh-Durham International",
+    "aliases": [
+      "RDU"
+    ]
+  },
+  {
+    "id": "rfd-chicago-rockford-international-airport",
+    "code": "RFD",
+    "name": "Chicago Rockford International Airport",
+    "aliases": [
+      "RFD"
+    ]
+  },
+  {
+    "id": "rjoy-yao-airport-2-chome-12-airport-yao-osaka-japan",
+    "code": "RJOY",
+    "name": "Yao Airport, 2 Chome-12 Airport, Yao, Osaka, Japan",
+    "aliases": [
+      "RJOY"
+    ]
+  },
+  {
+    "id": "rno-reno-tahoe-international-airport",
+    "code": "RNO",
+    "name": "Reno-Tahoe International Airport",
+    "aliases": [
+      "RNO"
+    ]
+  },
+  {
+    "id": "roa-roanoke-blacksburg-regional-airport",
+    "code": "ROA",
+    "name": "Roanoke Blacksburg Regional Airport",
+    "aliases": [
+      "ROA"
+    ]
+  },
+  {
+    "id": "roc-frederick-douglass-greater-rochester-international-airport",
+    "code": "ROC",
+    "name": "Frederick Douglass Greater Rochester International Airport",
+    "aliases": [
+      "ROC"
+    ]
+  },
+  {
+    "id": "rok-rockhampton-airport",
+    "code": "ROK",
+    "name": "Rockhampton Airport",
+    "aliases": [
+      "ROK"
+    ]
+  },
+  {
+    "id": "rsw-southwest-florida-international-airport",
+    "code": "RSW",
+    "name": "Southwest Florida International Airport",
+    "aliases": [
+      "RSW"
+    ]
+  },
+  {
+    "id": "sads-san-justo-aeroclub-airport-argentina",
+    "code": "SADS",
+    "name": "San Justo Aeroclub airport, Argentina",
+    "aliases": [
+      "SADS"
+    ]
+  },
+  {
+    "id": "saf-santa-fe-regional-airport",
+    "code": "SAF",
+    "name": "Santa Fe Regional Airport",
+    "aliases": [
+      "SAF"
+    ]
+  },
+  {
+    "id": "san-san-diego-international-airport",
+    "code": "SAN",
+    "name": "San Diego International Airport,",
+    "aliases": [
+      "SAN"
+    ]
+  },
+  {
+    "id": "sat-san-antonio-international-airport",
+    "code": "SAT",
+    "name": "San Antonio International Airport",
+    "aliases": [
+      "SAT"
+    ]
+  },
+  {
+    "id": "sav-savannah-hilton-head-airport",
+    "code": "SAV",
+    "name": "Savannah Hilton Head Airport",
+    "aliases": [
+      "SAV"
+    ]
+  },
+  {
+    "id": "saw-sabiha-gokcen",
+    "code": "SAW",
+    "name": "Sabiha Gokcen",
+    "aliases": [
+      "SAW"
+    ]
+  },
+  {
+    "id": "sba-santa-barbara-municipal-airport",
+    "code": "SBA",
+    "name": "Santa Barbara Municipal Airport",
+    "aliases": [
+      "SBA"
+    ]
+  },
+  {
+    "id": "scc-deadhorse-airport",
+    "code": "SCC",
+    "name": "Deadhorse Airport",
+    "aliases": [
+      "SCC"
+    ]
+  },
+  {
+    "id": "sck-stockton-metropolitan-airport",
+    "code": "SCK",
+    "name": "Stockton Metropolitan Airport",
+    "aliases": [
+      "SCK"
+    ]
+  },
+  {
+    "id": "sdf-louisville-muhammad-ali-international-airport",
+    "code": "SDF",
+    "name": "Louisville Muhammad Ali International Airport",
+    "aliases": [
+      "SDF"
+    ]
+  },
+  {
+    "id": "sdl-scottsdale-airport",
+    "code": "SDL",
+    "name": "Scottsdale Airport",
+    "aliases": [
+      "SDL"
+    ]
+  },
+  {
+    "id": "sea-seattle-tacoma-international-airport",
+    "code": "SEA",
+    "name": "Seattle-Tacoma International Airport",
+    "aliases": [
+      "SEA"
+    ]
+  },
+  {
+    "id": "sfb-orlando-sanford-international-airport",
+    "code": "SFB",
+    "name": "Orlando Sanford International Airport",
+    "aliases": [
+      "SFB"
+    ]
+  },
+  {
+    "id": "sfo-san-francisco-international-airport",
+    "code": "SFO",
+    "name": "San Francisco International Airport",
+    "aliases": [
+      "SFO"
+    ]
+  },
+  {
+    "id": "sin-changi-airport-singapore",
+    "code": "SIN",
+    "name": "Changi Airport Singapore",
+    "aliases": [
+      "SIN"
+    ]
+  },
+  {
+    "id": "sjc-san-jose-mineta-international-airport-san-jose-california",
+    "code": "SJC",
+    "name": "San Jose Mineta International Airport, San Jose, California",
+    "aliases": [
+      "SJC"
+    ]
+  },
+  {
+    "id": "sju-luis-mu-oz-marin-international-airport",
+    "code": "SJU",
+    "name": "Luis Muñoz Marin International Airport",
+    "aliases": [
+      "SJU"
+    ]
+  },
+  {
+    "id": "skf-kelly-field-airport",
+    "code": "SKF",
+    "name": "Kelly Field Airport",
+    "aliases": [
+      "SKF"
+    ]
+  },
+  {
+    "id": "skp-skopje-international-airport",
+    "code": "SKP",
+    "name": "Skopje International Airport",
+    "aliases": [
+      "SKP"
+    ]
+  },
+  {
+    "id": "slc-salt-lake-city-international-airport",
+    "code": "SLC",
+    "name": "Salt Lake City International Airport",
+    "aliases": [
+      "SLC"
+    ]
+  },
+  {
+    "id": "smf-sacramento-international-airport",
+    "code": "SMF",
+    "name": "Sacramento International Airport",
+    "aliases": [
+      "SMF"
+    ]
+  },
+  {
+    "id": "sna-john-wayne-orange-county",
+    "code": "SNA",
+    "name": "John Wayne Orange County",
+    "aliases": [
+      "SNA"
+    ]
+  },
+  {
+    "id": "snn-shannon-airport-co-clare-ireland",
+    "code": "SNN",
+    "name": "Shannon Airport, Co. Clare, Ireland",
+    "aliases": [
+      "SNN"
+    ]
+  },
+  {
+    "id": "sou-southampton-airport-southampton-united-kingdom",
+    "code": "SOU",
+    "name": "Southampton Airport, Southampton, United Kingdom",
+    "aliases": [
+      "SOU"
+    ]
+  },
+  {
+    "id": "stl-st-louis-lambert-international-airport",
+    "code": "STL",
+    "name": "St. Louis Lambert International Airport",
+    "aliases": [
+      "STL"
+    ]
+  },
+  {
+    "id": "stn-london-stansted-airport",
+    "code": "STN",
+    "name": "London Stansted Airport",
+    "aliases": [
+      "STN"
+    ]
+  },
+  {
+    "id": "sux-sioux-gateway-airport-2403-aviation-boulevard-sioux-city-ia",
+    "code": "SUX",
+    "name": "Sioux Gateway Airport, 2403 Aviation Boulevard, Sioux City, IA",
+    "aliases": [
+      "SUX"
+    ]
+  },
+  {
+    "id": "svn-hunter-army-airfield-horace-emmet-685-wilson-boulevard-savannah-ga",
+    "code": "SVN",
+    "name": "Hunter Army Airfield, Horace Emmet, 685 Wilson Boulevard, Savannah, GA",
+    "aliases": [
+      "SVN"
+    ]
+  },
+  {
+    "id": "swa-swa-created-by-silo-001",
+    "code": "SWA",
+    "name": "SWA - Created by Silo 001",
+    "aliases": [
+      "SWA"
+    ]
+  },
+  {
+    "id": "syd-sydney-kingsford-smith-airport",
+    "code": "SYD",
+    "name": "Sydney Kingsford Smith Airport",
+    "aliases": [
+      "SYD"
+    ]
+  },
+  {
+    "id": "syr-syracuse-hancock-international-airport",
+    "code": "SYR",
+    "name": "Syracuse Hancock International Airport",
+    "aliases": [
+      "SYR"
+    ]
+  },
+  {
+    "id": "teb-teterboro-airport",
+    "code": "TEB",
+    "name": "Teterboro Airport",
+    "aliases": [
+      "TEB"
+    ]
+  },
+  {
+    "id": "tij-tijuana-international-airport",
+    "code": "TIJ",
+    "name": "Tijuana International Airport",
+    "aliases": [
+      "TIJ"
+    ]
+  },
+  {
+    "id": "tlh-tallahassee-international-airport",
+    "code": "TLH",
+    "name": "Tallahassee International Airport",
+    "aliases": [
+      "TLH"
+    ]
+  },
+  {
+    "id": "tls-toulouse-blagnac-airport",
+    "code": "TLS",
+    "name": "Toulouse-Blagnac Airport",
+    "aliases": [
+      "TLS"
+    ]
+  },
+  {
+    "id": "tlv-ben-gurion-airport",
+    "code": "TLV",
+    "name": "Ben Gurion Airport",
+    "aliases": [
+      "TLV"
+    ]
+  },
+  {
+    "id": "tme-houston-executive-airport",
+    "code": "TME",
+    "name": "Houston Executive Airport",
+    "aliases": [
+      "TME"
+    ]
+  },
+  {
+    "id": "toj-torrejon-toreia-airport-papua-new-guinea",
+    "code": "TOJ",
+    "name": "TORREJON - Toreia Airport, Papua New Guinea",
+    "aliases": [
+      "TOJ"
+    ]
+  },
+  {
+    "id": "tpa-tampa-international-airport",
+    "code": "TPA",
+    "name": "Tampa International Airport",
+    "aliases": [
+      "TPA"
+    ]
+  },
+  {
+    "id": "tpe-taiwan-taoyuan-international-airport",
+    "code": "TPE",
+    "name": "Taiwan Taoyuan International Airport",
+    "aliases": [
+      "TPE"
+    ]
+  },
+  {
+    "id": "tsa-songshan-airport-tsa-in-taipei-taiwan",
+    "code": "TSA",
+    "name": "Songshan Airport (TSA) in Taipei, Taiwan",
+    "aliases": [
+      "TSA"
+    ]
+  },
+  {
+    "id": "tul-tulsa-international-airport",
+    "code": "TUL",
+    "name": "Tulsa International Airport",
+    "aliases": [
+      "TUL"
+    ]
+  },
+  {
+    "id": "tus-tucson-international-airport",
+    "code": "TUS",
+    "name": "Tucson International Airport",
+    "aliases": [
+      "TUS"
+    ]
+  },
+  {
+    "id": "tyr-tyler-pounds-regional-airport",
+    "code": "TYR",
+    "name": "Tyler Pounds Regional Airport",
+    "aliases": [
+      "TYR"
+    ]
+  },
+  {
+    "id": "tys-mcghee-tyson",
+    "code": "TYS",
+    "name": "McGhee Tyson",
+    "aliases": [
+      "TYS"
+    ]
+  },
+  {
+    "id": "udr-maharana-pratap-airport-udaipur-dabok-rajasthan-india",
+    "code": "UDR",
+    "name": "Maharana Pratap Airport Udaipur, Dabok, Rajasthan, India",
+    "aliases": [
+      "UDR"
+    ]
+  },
+  {
+    "id": "uio-mariscal-sucre-international-airport",
+    "code": "UIO",
+    "name": "Mariscal Sucre International Airport",
+    "aliases": [
+      "UIO"
+    ]
+  },
+  {
+    "id": "ush-ushuaia-airport-argentina",
+    "code": "USH",
+    "name": "Ushuaia Airport, Argentina",
+    "aliases": [
+      "USH"
+    ]
+  },
+  {
+    "id": "vcv-southern-california-logistics-airport",
+    "code": "VCV",
+    "name": "Southern California Logistics Airport",
+    "aliases": [
+      "VCV"
+    ]
+  },
+  {
+    "id": "vit-victoria-gasteizko-airport-spain",
+    "code": "VIT",
+    "name": "Victoria Gasteizko Airport Spain",
+    "aliases": [
+      "VIT"
+    ]
+  },
+  {
+    "id": "vps-destin-fort-walton-beach-airport",
+    "code": "VPS",
+    "name": "Destin-Fort Walton Beach Airport",
+    "aliases": [
+      "VPS"
+    ]
+  },
+  {
+    "id": "wmm-walker-mill-maryland",
+    "code": "WMM",
+    "name": "Walker Mill, Maryland",
+    "aliases": [
+      "WMM"
+    ]
+  },
+  {
+    "id": "wpa-wiley-post-will-rogers-memorial-airport",
+    "code": "WPA",
+    "name": "Wiley Post-Will Rogers Memorial Airport",
+    "aliases": [
+      "WPA"
+    ]
+  },
+  {
+    "id": "wrg-wrangell-airport",
+    "code": "WRG",
+    "name": "Wrangell Airport",
+    "aliases": [
+      "WRG"
+    ]
+  },
+  {
+    "id": "yak-yakutat-airport-yak",
+    "code": "YAK",
+    "name": "Yakutat Airport YAK",
+    "aliases": [
+      "YAK"
+    ]
+  },
+  {
+    "id": "yeg-edmonton-international-airport",
+    "code": "YEG",
+    "name": "Edmonton International Airport",
+    "aliases": [
+      "YEG"
+    ]
+  },
+  {
+    "id": "yhm-john-c-munro-hamilton-international-airport",
+    "code": "YHM",
+    "name": "John C. Munro Hamilton International Airport",
+    "aliases": [
+      "YHM"
+    ]
+  },
+  {
+    "id": "yip-willow-run-airport-801-willow-run-airport-superior-township-mi",
+    "code": "YIP",
+    "name": "Willow Run Airport, 801 Willow Run Airport, Superior Township, MI",
+    "aliases": [
+      "YIP"
+    ]
+  },
+  {
+    "id": "ymx-montr-al-mirabel-international-airport-montreal-quebec-canada",
+    "code": "YMX",
+    "name": "Montréal-Mirabel International Airport, Montreal, Quebec, Canada",
+    "aliases": [
+      "YMX"
+    ]
+  },
+  {
+    "id": "yqb-qu-bec-city-jean-lesage-international-airport",
+    "code": "YQB",
+    "name": "Québec City Jean Lesage International Airport",
+    "aliases": [
+      "YQB"
+    ]
+  },
+  {
+    "id": "yul-montr-al-pierre-elliott-trudeau-international-airport",
+    "code": "YUL",
+    "name": "Montréal-Pierre Elliott Trudeau International Airport",
+    "aliases": [
+      "YUL"
+    ]
+  },
+  {
+    "id": "yvr-vancouver-international-airport",
+    "code": "YVR",
+    "name": "Vancouver International Airport",
+    "aliases": [
+      "YVR"
+    ]
+  },
+  {
+    "id": "ywg-winnipeg-richardson-international-airport",
+    "code": "YWG",
+    "name": "Winnipeg Richardson International Airport",
+    "aliases": [
+      "YWG"
+    ]
+  },
+  {
+    "id": "yyc-calgary-international-airport",
+    "code": "YYC",
+    "name": "Calgary International Airport",
+    "aliases": [
+      "YYC"
+    ]
+  },
+  {
+    "id": "yyj-victoria-international-airport-victoria-british-columbia-canada",
+    "code": "YYJ",
+    "name": "Victoria International Airport, Victoria, British Columbia, Canada",
+    "aliases": [
+      "YYJ"
+    ]
+  },
+  {
+    "id": "yyz-toronto-pearson-international-airport",
+    "code": "YYZ",
+    "name": "Toronto Pearson International Airport",
+    "aliases": [
+      "YYZ"
+    ]
+  },
+  {
+    "id": "yzd-downsview-airport-123-garratt-boulevard-toronto-on-canada",
+    "code": "YZD",
+    "name": "Downsview Airport, 123 Garratt Boulevard, Toronto, ON, Canada",
+    "aliases": [
+      "YZD"
+    ]
+  },
+  {
+    "id": "zbhh-hohhot-baita-international-airport-inner-mongolia-china",
+    "code": "ZBHH",
+    "name": "Hohhot Baita International Airport, Inner Mongolia, China",
+    "aliases": [
+      "ZBHH"
+    ]
+  }
+]
