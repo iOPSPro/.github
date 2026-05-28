@@ -10,6 +10,8 @@ This repository currently contains:
 
 - Issue forms in `.github/ISSUE_TEMPLATE/`
 - Reusable workflows in `.github/workflows/`
+- Canonical organization registry in `data/organization-registry.json`
+- Organization metadata guidance in `docs/organization-normalization.md`
 - This repository-level README
 
 It does not currently contain pull request templates, contribution guidelines, support files, or other community health files.
@@ -31,6 +33,8 @@ Shared form fields:
 - `Assign to current iteration?` appears on every form. A `Yes` answer is used by automation to add `assign-current-iteration`.
 - `Is there a specific environment this is for?` appears on every form and maps to the Organization Issue Field `Environment`.
 - Environment options are `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`.
+- `Segment` appears on every form and maps to the Organization Issue Field `Segment`.
+- `Organization` appears on every form and is normalized through `data/organization-registry.json` before being written to the Organization Issue Field `Organization`.
 - `Does this issue need testing?` appears on bug, feature, and work item forms. GitHub Issue Forms cannot conditionally apply labels from dropdown answers, so participating repositories need workflow automation to translate this intent into labels when required.
 
 `config.yml` disables blank issues and provides a contact link for security vulnerabilities. Security vulnerabilities should not be filed as public issues.
@@ -54,11 +58,12 @@ The reusable workflows split durable issue metadata from Project V2 board state.
 
 Expected Organization Issue Fields:
 
-- `Customer`: single-select issue-owned metadata.
 - `Created By`: text issue-owned metadata populated with the creator's GitHub username/login. The current iOPSPro numeric Issue Field ID is `42618012`.
 - `Effort`: number issue-owned metadata.
 - `Environment`: single-select issue-owned metadata with options `V1`, `V2`, `Backend`, `N/A`, and `Both V1 and V2`. The current iOPSPro numeric Issue Field ID is `42612370`.
+- `Organization`: text issue-owned metadata populated from the canonical registry in `data/organization-registry.json`. The current iOPSPro numeric Issue Field ID is `42656518`.
 - `Priority`: single-select issue-owned metadata with options `A1`, `A2`, `A3`, `B`, and `C`.
+- `Segment`: single-select issue-owned metadata with options `GSE`, `Gate Systems`, `Both`, and `N/A`. The current iOPSPro numeric Issue Field ID is `42612296`.
 - `Site`: single-select issue-owned metadata.
 - `Start Date`: date issue-owned metadata.
 - `Target Date`: date issue-owned metadata.
@@ -84,8 +89,9 @@ Workflows in this repository are reusable workflow scaffolds. They do not automa
 | `.github/workflows/sync-issue-created-by.yml` | Writes the issue creator's GitHub username/login to the Organization Issue Field `Created By`. | `issues.opened` |
 | `.github/workflows/sync-project-iteration-from-label.yml` | Finds the current iteration for `Iteration` and, when available, `60 Day Block`; sets those project fields; removes `assign-current-iteration` after success. | `issues.labeled` for `assign-current-iteration` |
 | `.github/workflows/sync-project-application-version-from-form.yml` | Reads the environment answer from the issue form and sets the Organization Issue Field `Environment`. | `issues.opened`, `issues.edited` |
-| `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parents labeled `needs-testing`; copies parent assignees; attaches it as a sub-issue; adds/copies Project V2 iteration fields and the Issue Fields `Environment` and `Created By`; labels the parent `testing-created`; comments with the child issue number. | `issues.opened` or `issues.labeled`, gated by `needs-testing` |
-| `.github/workflows/copy-parent-project-fields-to-test-child.yml` | For manually created testing child issues, finds the parent via the sub-issues API, copies parent assignees, adds the child to the project if needed, and copies Project V2 `Iteration`/`60 Day Block` plus the Issue Fields `Environment` and `Created By`. | `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch` |
+| `.github/workflows/sync-issue-segment-and-organization.yml` | Reads `Segment` and `Organization` answers from the issue form, validates organization names against the registry, writes canonical Issue Field values, and comments on unknown organizations. | `issues.opened`, `issues.edited` |
+| `.github/workflows/create-testing-subissue.yml` | Creates a `Testing: <parent title>` child issue for parents labeled `needs-testing`; copies parent assignees; attaches it as a sub-issue; adds/copies Project V2 iteration fields and the Issue Fields `Environment`, `Created By`, `Segment`, and `Organization`; labels the parent `testing-created`; comments with the child issue number. | `issues.opened` or `issues.labeled`, gated by `needs-testing` |
+| `.github/workflows/copy-parent-project-fields-to-test-child.yml` | For manually created testing child issues, finds the parent via the sub-issues API, copies parent assignees, adds the child to the project if needed, and copies Project V2 `Iteration`/`60 Day Block` plus the Issue Fields `Environment`, `Created By`, `Segment`, and `Organization`. | `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch` |
 | `.github/workflows/move-testing-subissues-to-testing.yml` | Finds sub-issues with `Testing:` in the title and moves their Project V2 `Status` to `In progress`. | Parent issue lifecycle events, commonly after parent issue closure or readiness transitions |
 | `.github/workflows/sync-pr-delivery-board-for-review.yml` | Requests review from the configured reviewer, optionally assigns the reviewer, adds the PR to the Delivery Board, sets current `Iteration` and `60 Day Block`, and sets `Status` to `In progress`. Defaults to `ready-for-dr-review` and `drichard1989`. | `pull_request.labeled`, gated by `ready-for-dr-review` |
 
@@ -101,14 +107,14 @@ Automation-created path:
 2. A caller workflow invokes `create-testing-subissue.yml`.
 3. The reusable workflow checks that the parent has `needs-testing` and does not already have `testing-created`.
 4. It creates a child issue titled `Testing: <parent title>` with label `testing` and type `Test`.
-5. It attaches the child as a GitHub sub-issue, copies parent assignees, adds/copies Project V2 iteration values and the Issue Fields `Environment` and `Created By`, labels the parent `testing-created`, and comments on the parent.
+5. It attaches the child as a GitHub sub-issue, copies parent assignees, adds/copies Project V2 iteration values and the Issue Fields `Environment`, `Created By`, `Segment`, and `Organization`, labels the parent `testing-created`, and comments on the parent.
 
 Manually created path:
 
 1. A user creates an issue with the `Testing` form.
 2. The issue is attached as a child issue of the parent.
 3. A caller workflow invokes `copy-parent-project-fields-to-test-child.yml`.
-4. The reusable workflow verifies the child has the `testing` label, finds the parent through the sub-issues API, and copies assignees, Project V2 iteration values, and the Issue Fields `Environment` and `Created By`.
+4. The reusable workflow verifies the child has the `testing` label, finds the parent through the sub-issues API, and copies assignees, Project V2 iteration values, and the Issue Fields `Environment`, `Created By`, `Segment`, and `Organization`.
 
 GitHub Actions does not expose a dedicated documented `issues` activity type for "issue became a sub-issue." For manually created testing children, caller repositories should trigger the copy workflow from nearby events such as `issues.opened`, `issues.edited`, `issues.labeled`, and/or `workflow_dispatch`.
 
@@ -120,8 +126,9 @@ Participating repositories should add caller workflows for the pieces they need:
 - Sync the Issue Field `Created By` from the issue author login on issue open.
 - Sync current iteration when `assign-current-iteration` is applied.
 - Sync the Issue Field `Environment` from issue forms on issue open/edit.
+- Sync the Issue Fields `Segment` and `Organization` from issue forms on issue open/edit.
 - Create testing sub-issues when `needs-testing` is present.
-- Copy parent Project V2 iteration fields and Issue Fields `Environment`/`Created By` for testing children.
+- Copy parent Project V2 iteration fields and Issue Fields `Environment`/`Created By`/`Segment`/`Organization` for testing children.
 - Move testing sub-issues to `In progress` when the parent workflow needs that handoff.
 - Sync PRs to the Delivery Board review queue when `ready-for-dr-review` is applied.
 
@@ -134,6 +141,8 @@ Caller workflows should pass:
 - `project_number: 5`
 - `issue_field_id: "42618012"` when syncing the `Created By` Issue Field
 - `issue_field_id: "42612370"` when syncing the `Environment` Issue Field
+- `segment_issue_field_id: "42612296"` when syncing the `Segment` Issue Field
+- `organization_issue_field_id: "42656518"` when syncing the `Organization` Issue Field
 - `project_token: ${{ secrets.PROJECT_TOKEN }}`
 
 Example caller for Dylan Richard PR review queue automation:
@@ -163,6 +172,7 @@ jobs:
 
 - Keep issue form question labels stable unless the corresponding workflow inputs are updated. The workflows parse rendered issue body headings such as `### Assign to current iteration?`.
 - Keep Issue Field and Project V2 field names and single-select option names aligned with the defaults documented above.
+- Keep `data/organization-registry.json` canonical and non-sensitive. Add aliases for common variants instead of adding organization names as single-select options.
 - Keep only non-sensitive, organization-safe defaults in this repository.
 - If repository-specific intake or automation differs from these defaults, define local templates or caller workflow inputs in that repository.
 

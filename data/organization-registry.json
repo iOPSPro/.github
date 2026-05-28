@@ -1,0 +1,776 @@
+[
+  {
+    "id": "1-aviation",
+    "code": "1A",
+    "name": "1 Aviation",
+    "aliases": ["1A"]
+  },
+  {
+    "id": "american-airlines",
+    "code": "AA",
+    "name": "American Airlines",
+    "aliases": ["AA"]
+  },
+  {
+    "id": "lehigh-valley-international-airport-abe",
+    "code": "ABE",
+    "name": "Lehigh Valley International Airport (Abe)",
+    "aliases": ["ABE"]
+  },
+  {
+    "id": "austin-bergstrom-international-airport",
+    "code": "ABIA",
+    "name": "Austin-Bergstrom International Airport",
+    "aliases": ["ABIA"]
+  },
+  {
+    "id": "albuquerque-international-sunport-gateway-of-new-mexico",
+    "code": "ABQ",
+    "name": "Albuquerque International Sunport - Gateway Of New Mexico",
+    "aliases": ["ABQ"]
+  },
+  {
+    "id": "aerlink",
+    "code": "AERLINK",
+    "name": "Aerlink",
+    "aliases": ["AERLINK"]
+  },
+  {
+    "id": "aerolineas-argentinas",
+    "code": "AEROARG",
+    "name": "Aerolineas Argentinas",
+    "aliases": ["AEROARG"]
+  },
+  {
+    "id": "alaska-airlines",
+    "code": "ALASKA AIR",
+    "name": "Alaska Airlines",
+    "aliases": ["ALASKA AIR", "Alaska Air"]
+  },
+  {
+    "id": "alliance-ground",
+    "code": "ALLIANCE",
+    "name": "Alliance Ground",
+    "aliases": ["ALLIANCE"]
+  },
+  {
+    "id": "aloha-air-cargo",
+    "code": "ALOHA",
+    "name": "Aloha Air Cargo",
+    "aliases": ["ALOHA"]
+  },
+  {
+    "id": "amazon",
+    "code": "AMAZON",
+    "name": "Amazon",
+    "aliases": ["AMAZON"]
+  },
+  {
+    "id": "advanced-study-of-air-mobility",
+    "code": "ASAM",
+    "name": "Advanced Study Of Air Mobility",
+    "aliases": ["ASAM"]
+  },
+  {
+    "id": "atlantic-aviation",
+    "code": "ATLANTIC",
+    "name": "Atlantic Aviation",
+    "aliases": ["ATLANTIC"]
+  },
+  {
+    "id": "ats",
+    "code": "ATS",
+    "name": "Ats",
+    "aliases": ["ATS"]
+  },
+  {
+    "id": "appleton-international-airport",
+    "code": "ATW",
+    "name": "Appleton International Airport",
+    "aliases": ["ATW"]
+  },
+  {
+    "id": "averest-inc",
+    "code": "AVEREST",
+    "name": "Averest Inc",
+    "aliases": ["AVEREST"]
+  },
+  {
+    "id": "baltimore-county-fire-department",
+    "code": "BALTIMORE",
+    "name": "Baltimore County Fire Department",
+    "aliases": ["BALTIMORE"]
+  },
+  {
+    "id": "us-bangla",
+    "code": "BAN",
+    "name": "Us Bangla",
+    "aliases": ["BAN"]
+  },
+  {
+    "id": "city-of-bangor-maine",
+    "code": "BGR",
+    "name": "City of Bangor Maine",
+    "aliases": ["BGR"]
+  },
+  {
+    "id": "biman",
+    "code": "BIMAN",
+    "name": "Biman",
+    "aliases": ["BIMAN"]
+  },
+  {
+    "id": "blue-dart",
+    "code": "BlueDart",
+    "name": "Blue Dart",
+    "aliases": ["BlueDart"]
+  },
+  {
+    "id": "nashville-international-airport",
+    "code": "BNA",
+    "name": "Nashville International Airport",
+    "aliases": ["BNA"]
+  },
+  {
+    "id": "british-airways",
+    "code": "BritishAir",
+    "name": "British Airways",
+    "aliases": ["BritishAir"]
+  },
+  {
+    "id": "bozeman-yellowstone-international-airport",
+    "code": "BZN",
+    "name": "Bozeman Yellowstone International Airport",
+    "aliases": ["BZN"]
+  },
+  {
+    "id": "calm-air",
+    "code": "CALM",
+    "name": "Calm Air",
+    "aliases": ["CALM"]
+  },
+  {
+    "id": "air-canada",
+    "code": "CAN",
+    "name": "Air Canada",
+    "aliases": ["CAN"]
+  },
+  {
+    "id": "cargojet",
+    "code": "CARGOJET",
+    "name": "Cargojet",
+    "aliases": ["CARGOJET"]
+  },
+  {
+    "id": "cebu-pacific-air",
+    "code": "CEBU",
+    "name": "Cebu Pacific Air",
+    "aliases": ["CEBU"]
+  },
+  {
+    "id": "charter-holdings",
+    "code": "CHARTER",
+    "name": "Charter Holdings",
+    "aliases": ["Charter Holdings"]
+  },
+  {
+    "id": "charter-america",
+    "code": "Charter",
+    "name": "Charter America",
+    "aliases": ["Charter America"]
+  },
+  {
+    "id": "the-eastern-iowa-airport-cedar-rapids",
+    "code": "CID",
+    "name": "The Eastern Iowa Airport - Cedar Rapids",
+    "aliases": ["CID"]
+  },
+  {
+    "id": "charlotte-douglas-international-airport",
+    "code": "CLT",
+    "name": "Charlotte Douglas International Airport",
+    "aliases": ["CLT"]
+  },
+  {
+    "id": "columbia",
+    "code": "COLUMBIA",
+    "name": "Columbia",
+    "aliases": ["COLUMBIA"]
+  },
+  {
+    "id": "comav-technical-services",
+    "code": "ComAv",
+    "name": "ComAv Technical Services",
+    "aliases": ["ComAv"]
+  },
+  {
+    "id": "core",
+    "code": "CORE",
+    "name": "Core",
+    "aliases": ["CORE"]
+  },
+  {
+    "id": "columbus-regional-airport-authority",
+    "code": "CRAA",
+    "name": "Columbus Regional Airport Authority",
+    "aliases": ["CRAA"]
+  },
+  {
+    "id": "cincinnati-northern-kentucky-international-airport",
+    "code": "CVG",
+    "name": "Cincinnati / Northern Kentucky International Airport",
+    "aliases": ["CVG"]
+  },
+  {
+    "id": "dallas-tx-fire-rescue",
+    "code": "DAL-FIRE",
+    "name": "Dallas (Tx) Fire-Rescue",
+    "aliases": ["DAL-FIRE"]
+  },
+  {
+    "id": "das-hong-kong",
+    "code": "DAS",
+    "name": "DAS Hong Kong",
+    "aliases": ["DAS"]
+  },
+  {
+    "id": "delta-air-lines",
+    "code": "DELTA",
+    "name": "Delta Air Lines",
+    "aliases": ["DELTA", "Delta Airlines", "Delta"]
+  },
+  {
+    "id": "demo-units",
+    "code": "DEMO",
+    "name": "Demo Units",
+    "aliases": ["DEMO"]
+  },
+  {
+    "id": "dallas-fort-worth-international-airport",
+    "code": "DFW",
+    "name": "Dallas/Fort Worth International Airport",
+    "aliases": ["DFW"]
+  },
+  {
+    "id": "dhl",
+    "code": "DHL",
+    "name": "DHL",
+    "aliases": ["DHL"]
+  },
+  {
+    "id": "divya-insane-asylum",
+    "code": "DIVYA",
+    "name": "Divya Insane Asylum",
+    "aliases": ["DIVYA"]
+  },
+  {
+    "id": "dnata",
+    "code": "DNATA",
+    "name": "Dnata",
+    "aliases": ["DNATA"]
+  },
+  {
+    "id": "des-moines-international-airport",
+    "code": "DSM",
+    "name": "Des Moines International Airport",
+    "aliases": ["DSM"]
+  },
+  {
+    "id": "eugene-airport-mahlon-sweet-field",
+    "code": "EUG",
+    "name": "Eugene Airport-Mahlon Sweet Field",
+    "aliases": ["EUG"]
+  },
+  {
+    "id": "newark-liberty-international-airport",
+    "code": "EWR",
+    "name": "Newark Liberty International Airport",
+    "aliases": ["EWR"]
+  },
+  {
+    "id": "f-e-aircraft-maintenance",
+    "code": "F&E",
+    "name": "F&E Aircraft Maintenance",
+    "aliases": ["F&E"]
+  },
+  {
+    "id": "fresno-yosemite-international-airport",
+    "code": "FAT",
+    "name": "Fresno Yosemite International Airport",
+    "aliases": ["FAT"]
+  },
+  {
+    "id": "federal-express",
+    "code": "FedEx",
+    "name": "Federal Express",
+    "aliases": ["FedEx"]
+  },
+  {
+    "id": "savannah-airport-commission",
+    "code": "FLYSAV",
+    "name": "Savannah Airport Commission",
+    "aliases": ["FLYSAV"]
+  },
+  {
+    "id": "fuzhou-changle-international-airport",
+    "code": "FOC",
+    "name": "Fuzhou Changle International Airport",
+    "aliases": ["FOC"]
+  },
+  {
+    "id": "the-force-gse",
+    "code": "ForceGSE",
+    "name": "The Force GSE",
+    "aliases": ["ForceGSE"]
+  },
+  {
+    "id": "fortbrand",
+    "code": "Fort",
+    "name": "Fortbrand",
+    "aliases": ["Fort"]
+  },
+  {
+    "id": "fort-worth-tx-fire-department",
+    "code": "FW-FIRE",
+    "name": "Fort Worth (Tx) Fire Department",
+    "aliases": ["FW-FIRE"]
+  },
+  {
+    "id": "gat",
+    "code": "GAT",
+    "name": "Gat",
+    "aliases": ["GAT"]
+  },
+  {
+    "id": "greater-orlando-aviation-authority",
+    "code": "GOAA",
+    "name": "Greater Orlando Aviation Authority",
+    "aliases": ["GOAA"]
+  },
+  {
+    "id": "greenville-ap",
+    "code": "GREENVILLE",
+    "name": "Greenville Ap",
+    "aliases": ["GREENVILLE"]
+  },
+  {
+    "id": "gta-aviation",
+    "code": "GTA",
+    "name": "GTA Aviation",
+    "aliases": ["GTA"]
+  },
+  {
+    "id": "the-haeco-group",
+    "code": "HAECO",
+    "name": "The Haeco Group",
+    "aliases": ["HAECO"]
+  },
+  {
+    "id": "houston-airport-systems",
+    "code": "HAS",
+    "name": "Houston Airport Systems",
+    "aliases": ["HAS"]
+  },
+  {
+    "id": "herc-rentals",
+    "code": "HERC",
+    "name": "Herc Rentals",
+    "aliases": ["HERC"]
+  },
+  {
+    "id": "heritage-aviation",
+    "code": "HERITAGE",
+    "name": "Heritage Aviation",
+    "aliases": ["HERITAGE"]
+  },
+  {
+    "id": "integrated-deicing-services",
+    "code": "IDS",
+    "name": "Integrated Deicing Services",
+    "aliases": ["IDS"]
+  },
+  {
+    "id": "intertecus",
+    "code": "Intertecus",
+    "name": "Intertecus",
+    "aliases": ["Intertecus"]
+  },
+  {
+    "id": "jfk-international-air-terminal-llc",
+    "code": "JFK",
+    "name": "JFK International Air Terminal LLC",
+    "aliases": ["JFK"]
+  },
+  {
+    "id": "kas-korea",
+    "code": "KAS",
+    "name": "KAS (Korea)",
+    "aliases": ["KAS"]
+  },
+  {
+    "id": "l3",
+    "code": "L3H",
+    "name": "L3",
+    "aliases": ["L3H"]
+  },
+  {
+    "id": "mccarran-international-airport-las-vegas",
+    "code": "LAS",
+    "name": "McCarran International Airport - Las Vegas",
+    "aliases": ["LAS"]
+  },
+  {
+    "id": "siemens-lax",
+    "code": "LAX",
+    "name": "Siemens - LAX",
+    "aliases": ["LAX"]
+  },
+  {
+    "id": "blue-grass-airport",
+    "code": "LEX",
+    "name": "Blue Grass Airport",
+    "aliases": ["LEX"]
+  },
+  {
+    "id": "lgstx",
+    "code": "LGSTX",
+    "name": "Lgstx",
+    "aliases": ["LGSTX"]
+  },
+  {
+    "id": "logistics",
+    "code": "LGTX",
+    "name": "Logistics",
+    "aliases": ["LGTX"]
+  },
+  {
+    "id": "clinton-national-airport",
+    "code": "LIT",
+    "name": "Clinton National Airport",
+    "aliases": ["LIT"]
+  },
+  {
+    "id": "maman-israel",
+    "code": "MAMAN",
+    "name": "Maman Israel",
+    "aliases": ["MAMAN"]
+  },
+  {
+    "id": "mamtech-aviation",
+    "code": "Mamtech",
+    "name": "Mamtech Aviation",
+    "aliases": ["Mamtech"]
+  },
+  {
+    "id": "mare-trading",
+    "code": "MARE",
+    "name": "Mare Trading",
+    "aliases": ["MARE"]
+  },
+  {
+    "id": "mcneilus",
+    "code": "MCNEILUS",
+    "name": "Mcneilus",
+    "aliases": ["MCNEILUS"]
+  },
+  {
+    "id": "chicago-midway-international-airport",
+    "code": "MDW",
+    "name": "Chicago Midway International Airport",
+    "aliases": ["MDW"]
+  },
+  {
+    "id": "menzies",
+    "code": "MENZIES",
+    "name": "Menzies",
+    "aliases": ["MENZIES"]
+  },
+  {
+    "id": "mercury-gse",
+    "code": "MERC",
+    "name": "Mercury GSE",
+    "aliases": ["MERC"]
+  },
+  {
+    "id": "northern-air",
+    "code": "NORTHERN",
+    "name": "Northern Air",
+    "aliases": ["NORTHERN"]
+  },
+  {
+    "id": "oakland-international-airport",
+    "code": "OAK",
+    "name": "Oakland International Airport",
+    "aliases": ["OAK"]
+  },
+  {
+    "id": "norfolk-international-airport",
+    "code": "ORF",
+    "name": "Norfolk International Airport",
+    "aliases": ["ORF"]
+  },
+  {
+    "id": "palm-beach-international",
+    "code": "PBI",
+    "name": "Palm Beach International",
+    "aliases": ["PBI"]
+  },
+  {
+    "id": "portland-international-airport",
+    "code": "PDX",
+    "name": "Portland International Airport",
+    "aliases": ["PDX"]
+  },
+  {
+    "id": "pegasus-aviation-services",
+    "code": "Peg",
+    "name": "Pegasus Aviation Services",
+    "aliases": ["Peg"]
+  },
+  {
+    "id": "prince-george-county-fire-ems-department",
+    "code": "PGFD",
+    "name": "Prince George County Fire & Ems Department",
+    "aliases": ["PGFD"]
+  },
+  {
+    "id": "phoenix-sky-harbor-international-airport",
+    "code": "PHX",
+    "name": "Phoenix Sky Harbor International Airport",
+    "aliases": ["PHX"]
+  },
+  {
+    "id": "pierce-usa",
+    "code": "PIERCE-USA",
+    "name": "Pierce Usa",
+    "aliases": ["PIERCE-USA"]
+  },
+  {
+    "id": "pinnacle-logistics",
+    "code": "PIN",
+    "name": "Pinnacle Logistics",
+    "aliases": ["PIN"]
+  },
+  {
+    "id": "primeflight",
+    "code": "PRIME",
+    "name": "Primeflight",
+    "aliases": ["PRIME"]
+  },
+  {
+    "id": "qantas",
+    "code": "QANTAS",
+    "name": "Qantas",
+    "aliases": ["QANTAS"]
+  },
+  {
+    "id": "quantem-aviation-services-llc",
+    "code": "QUANTEM",
+    "name": "Quantem Aviation Services, Llc",
+    "aliases": ["QUANTEM"]
+  },
+  {
+    "id": "raleigh-durham-international-airport",
+    "code": "RDU",
+    "name": "Raleigh-Durham International Airport",
+    "aliases": ["RDU"]
+  },
+  {
+    "id": "gse-demo",
+    "code": "RESTRICTED",
+    "name": "Gse Demo",
+    "aliases": ["RESTRICTED"]
+  },
+  {
+    "id": "city-of-rochester-fire-department",
+    "code": "ROCHESTER",
+    "name": "City Of Rochester Fire Department",
+    "aliases": ["ROCHESTER"]
+  },
+  {
+    "id": "southwest-florida-international-airport",
+    "code": "RSW",
+    "name": "Southwest Florida International Airport",
+    "aliases": ["RSW"]
+  },
+  {
+    "id": "samaritans-purse",
+    "code": "SAMA",
+    "name": "Samaritans Purse",
+    "aliases": ["SAMA"]
+  },
+  {
+    "id": "samsic-airport",
+    "code": "SAMSIC",
+    "name": "Samsic Airport",
+    "aliases": ["SAMSIC"]
+  },
+  {
+    "id": "sharp-aviation",
+    "code": "SHARP AVIA",
+    "name": "Sharp Aviation",
+    "aliases": ["SHARP AVIA"]
+  },
+  {
+    "id": "signature-flight-services",
+    "code": "SIGNATURE",
+    "name": "Signature Flight Services",
+    "aliases": ["SIGNATURE"]
+  },
+  {
+    "id": "salt-lake-city-department-of-airports",
+    "code": "SLCDA",
+    "name": "Salt Lake City Department of Airports",
+    "aliases": ["SLCDA"]
+  },
+  {
+    "id": "somerset",
+    "code": "SOMERSET",
+    "name": "Somerset",
+    "aliases": ["SOMERSET"]
+  },
+  {
+    "id": "starlux-airlines",
+    "code": "STAR",
+    "name": "Starlux Airlines",
+    "aliases": ["STAR"]
+  },
+  {
+    "id": "stratair",
+    "code": "STRAT",
+    "name": "Stratair",
+    "aliases": ["STRAT"]
+  },
+  {
+    "id": "southwest-airlines",
+    "code": "SWA",
+    "name": "Southwest Airlines",
+    "aliases": ["SWA"]
+  },
+  {
+    "id": "swedavia",
+    "code": "SWEDAVIA",
+    "name": "Swedavia",
+    "aliases": ["SWEDAVIA"]
+  },
+  {
+    "id": "swissport",
+    "code": "SWISS",
+    "name": "SwissPort",
+    "aliases": ["SWISS"]
+  },
+  {
+    "id": "tav-macedonia",
+    "code": "TAV",
+    "name": "Tav Macedonia",
+    "aliases": ["TAV"]
+  },
+  {
+    "id": "tav-almaty",
+    "code": "TAV ALMATY",
+    "name": "Tav Almaty",
+    "aliases": ["TAV ALMATY"]
+  },
+  {
+    "id": "tcr",
+    "code": "TCR",
+    "name": "TCR",
+    "aliases": ["TCR"]
+  },
+  {
+    "id": "trego-dugan-aviation",
+    "code": "TDA",
+    "name": "Trego Dugan Aviation",
+    "aliases": ["TDA"]
+  },
+  {
+    "id": "tecmo",
+    "code": "TECMO",
+    "name": "Tecmo",
+    "aliases": ["TECMO"]
+  },
+  {
+    "id": "test-organization",
+    "code": "TEST",
+    "name": "Test Organization",
+    "aliases": ["TEST"]
+  },
+  {
+    "id": "tgs",
+    "code": "TGS",
+    "name": "Tgs",
+    "aliases": ["TGS"]
+  },
+  {
+    "id": "thy",
+    "code": "THY",
+    "name": "Thy",
+    "aliases": ["THY"]
+  },
+  {
+    "id": "turkish-airlines",
+    "code": "Turkish",
+    "name": "Turkish Airlines",
+    "aliases": ["Turkish"]
+  },
+  {
+    "id": "mcghee-tyson-airport-knoxville",
+    "code": "TYS",
+    "name": "McGhee Tyson Airport - Knoxville",
+    "aliases": ["TYS"]
+  },
+  {
+    "id": "unifi-aviation",
+    "code": "UNIFI",
+    "name": "Unifi Aviation",
+    "aliases": ["UNIFI"]
+  },
+  {
+    "id": "united-airlines",
+    "code": "United",
+    "name": "United Airlines",
+    "aliases": ["United"]
+  },
+  {
+    "id": "united-parcel-service",
+    "code": "UPS",
+    "name": "United Parcel Service",
+    "aliases": ["UPS"]
+  },
+  {
+    "id": "united-states-postal-service",
+    "code": "USPS",
+    "name": "United States Postal Service",
+    "aliases": ["USPS"]
+  },
+  {
+    "id": "wfs",
+    "code": "WFS",
+    "name": "Wfs",
+    "aliases": ["WFS"]
+  },
+  {
+    "id": "wright",
+    "code": "WRIGHT",
+    "name": "Wright",
+    "aliases": ["WRIGHT"]
+  },
+  {
+    "id": "wt-nam",
+    "code": "WT - NAM",
+    "name": "Wt - Nam",
+    "aliases": ["WT - NAM"]
+  },
+  {
+    "id": "xced",
+    "code": "Xced",
+    "name": "Xced",
+    "aliases": ["Xced"]
+  },
+  {
+    "id": "toronto-pearson-international-airport",
+    "code": "YYZ",
+    "name": "Toronto Pearson International Airport",
+    "aliases": ["YYZ"]
+  }
+]
