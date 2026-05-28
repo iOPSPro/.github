@@ -1,5 +1,11 @@
 [
   {
+    "id": "internal",
+    "code": "INTERNAL",
+    "name": "Internal",
+    "aliases": ["INTERNAL", "iOPS", "iOPSPro"]
+  },
+  {
     "id": "1-aviation",
     "code": "1A",
     "name": "1 Aviation",
