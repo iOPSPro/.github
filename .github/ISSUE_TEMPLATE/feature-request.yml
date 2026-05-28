@@ -51,6 +51,28 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: segment
+    attributes:
+      label: Segment
+      description: Business segment for reporting. Use N/A for internal work that does not map to a customer segment.
+      options:
+        - "GSE"
+        - "Gate Systems"
+        - "Both"
+        - "N/A"
+    validations:
+      required: true
+
+  - type: input
+    id: organization
+    attributes:
+      label: Organization
+      description: Customer or organization name. Automation normalizes known aliases to the canonical registry name.
+      placeholder: e.g., Internal / Delta Air Lines / Multiple Organizations
+    validations:
+      required: false
+
   - type: textarea
     id: problem
     attributes:

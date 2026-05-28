@@ -65,6 +65,26 @@ on:
         required: false
         default: "42618012"
         type: string
+      issue_segment_field_name:
+        description: Organization Issue Field Segment name to copy from parent
+        required: false
+        default: Segment
+        type: string
+      issue_segment_field_id:
+        description: Numeric Organization Issue Field ID for Segment
+        required: false
+        default: "42612296"
+        type: string
+      issue_organization_field_name:
+        description: Organization Issue Field Organization name to copy from parent
+        required: false
+        default: Organization
+        type: string
+      issue_organization_field_id:
+        description: Numeric Organization Issue Field ID for Organization
+        required: false
+        default: "42656518"
+        type: string
     secrets:
       project_token:
         description: Token with access to read/write issues, Project V2 fields, and Organization Issue Fields
@@ -95,6 +115,10 @@ jobs:
           INPUT_ISSUE_ENVIRONMENT_FIELD_ID: ${{ inputs.issue_environment_field_id }}
           INPUT_ISSUE_CREATED_BY_FIELD_NAME: ${{ inputs.issue_created_by_field_name }}
           INPUT_ISSUE_CREATED_BY_FIELD_ID: ${{ inputs.issue_created_by_field_id }}
+          INPUT_ISSUE_SEGMENT_FIELD_NAME: ${{ inputs.issue_segment_field_name }}
+          INPUT_ISSUE_SEGMENT_FIELD_ID: ${{ inputs.issue_segment_field_id }}
+          INPUT_ISSUE_ORGANIZATION_FIELD_NAME: ${{ inputs.issue_organization_field_name }}
+          INPUT_ISSUE_ORGANIZATION_FIELD_ID: ${{ inputs.issue_organization_field_id }}
         with:
           github-token: ${{ secrets.project_token }}
           script: |
@@ -114,6 +138,10 @@ jobs:
             const issueEnvironmentFieldId = Number(process.env.INPUT_ISSUE_ENVIRONMENT_FIELD_ID || 0);
             const issueCreatedByFieldName = (process.env.INPUT_ISSUE_CREATED_BY_FIELD_NAME || 'Created By').trim();
             const issueCreatedByFieldId = Number(process.env.INPUT_ISSUE_CREATED_BY_FIELD_ID || 0);
+            const issueSegmentFieldName = (process.env.INPUT_ISSUE_SEGMENT_FIELD_NAME || 'Segment').trim();
+            const issueSegmentFieldId = Number(process.env.INPUT_ISSUE_SEGMENT_FIELD_ID || 0);
+            const issueOrganizationFieldName = (process.env.INPUT_ISSUE_ORGANIZATION_FIELD_NAME || 'Organization').trim();
+            const issueOrganizationFieldId = Number(process.env.INPUT_ISSUE_ORGANIZATION_FIELD_ID || 0);
 
             if (!issueEnvironmentFieldId) {
               throw new Error(`Missing numeric Issue Field ID for "${issueEnvironmentFieldName}" on organization "${projectOwner}".`);
@@ -121,6 +149,14 @@ jobs:
 
             if (!issueCreatedByFieldId) {
               throw new Error(`Missing numeric Issue Field ID for "${issueCreatedByFieldName}" on organization "${projectOwner}".`);
+            }
+
+            if (!issueSegmentFieldId) {
+              core.info(`No numeric Issue Field ID configured for "${issueSegmentFieldName}". Skipping Segment copy.`);
+            }
+
+            if (!issueOrganizationFieldId) {
+              core.info(`No numeric Issue Field ID configured for "${issueOrganizationFieldName}". Skipping Organization copy.`);
             }
 
             const { data: childIssue } = await github.rest.issues.get({
@@ -449,6 +485,16 @@ jobs:
                 fieldId: issueCreatedByFieldId,
                 fieldName: issueCreatedByFieldName,
                 value: getIssueFieldValue(findParentIssueFieldValue(issueCreatedByFieldId)) || parentIssueAuthorLogin
+              },
+              {
+                fieldId: issueSegmentFieldId,
+                fieldName: issueSegmentFieldName,
+                value: issueSegmentFieldId ? getIssueFieldValue(findParentIssueFieldValue(issueSegmentFieldId)) : ''
+              },
+              {
+                fieldId: issueOrganizationFieldId,
+                fieldName: issueOrganizationFieldName,
+                value: issueOrganizationFieldId ? getIssueFieldValue(findParentIssueFieldValue(issueOrganizationFieldId)) : ''
               }
             ].filter(field => {
               if (!field.value) {
