@@ -64,6 +64,15 @@ body:
     validations:
       required: false
 
+  - type: input
+    id: site
+    attributes:
+      label: Site
+      description: Airport, facility, or site code/name. Automation normalizes known aliases to the canonical registry name.
+      placeholder: e.g., SLC / Salt Lake City International Airport
+    validations:
+      required: false
+
   - type: dropdown
     id: severity
     attributes:

@@ -88,6 +88,16 @@ on:
         required: false
         default: "42656518"
         type: string
+      issue_site_field_name:
+        description: Organization Issue Field Site name to copy from parent
+        required: false
+        default: Site
+        type: string
+      issue_site_field_id:
+        description: Numeric Organization Issue Field ID for Site
+        required: false
+        default: "42617022"
+        type: string
     secrets:
       project_token:
         description: Token with access to read/write Project V2 fields and Organization Issue Fields
@@ -228,6 +238,8 @@ jobs:
           INPUT_ISSUE_SEGMENT_FIELD_ID: ${{ inputs.issue_segment_field_id }}
           INPUT_ISSUE_ORGANIZATION_FIELD_NAME: ${{ inputs.issue_organization_field_name }}
           INPUT_ISSUE_ORGANIZATION_FIELD_ID: ${{ inputs.issue_organization_field_id }}
+          INPUT_ISSUE_SITE_FIELD_NAME: ${{ inputs.issue_site_field_name }}
+          INPUT_ISSUE_SITE_FIELD_ID: ${{ inputs.issue_site_field_id }}
           INPUT_PARENT_ISSUE_AUTHOR_LOGIN: ${{ steps.parent.outputs.parent_issue_author_login }}
           INPUT_PARENT_NODE_ID: ${{ steps.parent.outputs.parent_issue_node_id }}
           INPUT_CHILD_NODE_ID: ${{ steps.create_child.outputs.child_issue_node_id }}
@@ -254,6 +266,8 @@ jobs:
             const issueSegmentFieldId = Number(process.env.INPUT_ISSUE_SEGMENT_FIELD_ID || 0);
             const issueOrganizationFieldName = (process.env.INPUT_ISSUE_ORGANIZATION_FIELD_NAME || 'Organization').trim();
             const issueOrganizationFieldId = Number(process.env.INPUT_ISSUE_ORGANIZATION_FIELD_ID || 0);
+            const issueSiteFieldName = (process.env.INPUT_ISSUE_SITE_FIELD_NAME || 'Site').trim();
+            const issueSiteFieldId = Number(process.env.INPUT_ISSUE_SITE_FIELD_ID || 0);
             const parentIssueAuthorLogin = (process.env.INPUT_PARENT_ISSUE_AUTHOR_LOGIN || '').trim();
             const parentIssueNodeId = process.env.INPUT_PARENT_NODE_ID;
             const childIssueNodeId = process.env.INPUT_CHILD_NODE_ID;
@@ -272,6 +286,10 @@ jobs:
 
             if (!issueOrganizationFieldId) {
               core.info(`No numeric Issue Field ID configured for "${issueOrganizationFieldName}". Skipping Organization copy.`);
+            }
+
+            if (!issueSiteFieldId) {
+              core.info(`No numeric Issue Field ID configured for "${issueSiteFieldName}". Skipping Site copy.`);
             }
 
             const queryProjectForOrg = `
@@ -554,6 +572,11 @@ jobs:
                 fieldId: issueOrganizationFieldId,
                 fieldName: issueOrganizationFieldName,
                 value: issueOrganizationFieldId ? getIssueFieldValue(findParentIssueFieldValue(issueOrganizationFieldId)) : ''
+              },
+              {
+                fieldId: issueSiteFieldId,
+                fieldName: issueSiteFieldName,
+                value: issueSiteFieldId ? getIssueFieldValue(findParentIssueFieldValue(issueSiteFieldId)) : ''
               }
             ].filter(field => {
               if (!field.value) {
