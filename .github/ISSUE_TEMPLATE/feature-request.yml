@@ -55,7 +55,7 @@ body:
     id: segment
     attributes:
       label: Segment
-      description: Business segment for reporting. Use N/A for internal work that does not map to a customer segment.
+      description: "Business segment for reporting. Select exactly one supported value: GSE, Gate Systems, Both, or N/A. Use Both only when the work applies to both supported segments; use N/A for internal work that does not map to a customer segment."
       options:
         - "GSE"
         - "Gate Systems"
@@ -68,8 +68,8 @@ body:
     id: organization
     attributes:
       label: Organization
-      description: Customer or organization name. Automation normalizes known aliases to the canonical registry name.
-      placeholder: e.g., Internal / Delta Air Lines / Multiple Organizations
+      description: "Enter one canonical organization name or known alias from the organization registry. Do not enter Multiple, Other, Unknown, a list, or free-form notes. If more than one organization is affected, enter the primary organization only; use Internal for iOPSPro/internal work; leave blank if no single organization applies."
+      placeholder: e.g., Internal / Delta Air Lines
     validations:
       required: false
 
@@ -77,7 +77,7 @@ body:
     id: site
     attributes:
       label: Site
-      description: Airport, facility, or site code/name. Automation normalizes known aliases to the canonical registry name.
+      description: "Enter one canonical site name, site code, or known alias from the site registry. Do not enter Multiple, Other, Unknown, a list, or free-form notes. If more than one site is affected, enter the primary site only; leave blank if no single site applies."
       placeholder: e.g., SLC / Salt Lake City International Airport
     validations:
       required: false
