@@ -13,14 +13,13 @@ body:
       value: |
         Use this template for non-bug, non-incident tasks (migration, platform work, governance, documentation, chores).
 
-        Issues created from this form automatically receive the `needs-testing` label.
-        Future automation will use that label to create a related testing child issue.
+        The testing question below defaults to Yes. When Yes, automation adds the `needs-testing` label and can create a related testing child issue after metadata sync.
 
   - type: dropdown
     id: assign_current_iteration
     attributes:
       label: Assign to current iteration?
-      description: Select "Yes" to signal automation to add the `assign-current-iteration` label after issue creation.
+      description: "If Yes, automation adds `assign-current-iteration`; the follow-up workflow adds this issue to the project if needed, sets Project V2 `Iteration` to the current iteration, sets `60 Day Block` to the current block when that field exists, then removes the temporary label. If No, no iteration fields are requested."
       options:
         - "No"
         - "Yes"
@@ -32,6 +31,7 @@ body:
     id: needs_testing
     attributes:
       label: Does this issue need testing?
+      description: "If Yes, automation adds `needs-testing`. After metadata and iteration sync, a `Testing: <title>` child issue can be created, attached as a sub-issue, assigned to the same assignees, and populated with the parent's `Iteration`, `60 Day Block`, `Environment`, `Created By`, `Segment`, `Organization`, and `Site` values. If No, no testing child issue is requested."
       options:
         - "Yes"
         - "No"
@@ -43,6 +43,7 @@ body:
     id: specific_environment
     attributes:
       label: Is there a specific environment this is for?
+      description: "This answer is written to the Organization Issue Field `Environment`. Select exactly one supported value: V1, V2, Backend, N/A, or Both V1 and V2."
       options:
         - "V1"
         - "V2"
@@ -56,7 +57,7 @@ body:
     id: segment
     attributes:
       label: Segment
-      description: "Business segment for reporting. Select exactly one supported value: GSE, Gate Systems, Both, or N/A. Use Both only when the work applies to both supported segments; use N/A for internal work that does not map to a customer segment."
+      description: "This answer is written to the Organization Issue Field `Segment`. Select exactly one supported value: GSE, Gate Systems, Both, or N/A. Use Both only when the work applies to both supported segments; use N/A for internal work that does not map to a customer segment."
       options:
         - "GSE"
         - "Gate Systems"
@@ -69,7 +70,7 @@ body:
     id: organization
     attributes:
       label: Organization
-      description: "Enter one canonical organization name or known alias from the organization registry. Do not enter Multiple, Other, Unknown, a list, or free-form notes. If more than one organization is affected, enter the primary organization only; use Internal for iOPSPro/internal work; leave blank if no single organization applies."
+      description: "Automation normalizes this answer through the organization registry and writes the canonical value to the Organization Issue Field `Organization`. Enter one canonical organization name or known alias. Do not enter Multiple, Other, Unknown, a list, or free-form notes. If more than one organization is affected, enter the primary organization only; use Internal for iOPSPro/internal work; leave blank if no single organization applies."
       placeholder: e.g., Internal / Delta Air Lines
     validations:
       required: false
@@ -78,7 +79,7 @@ body:
     id: site
     attributes:
       label: Site
-      description: "Enter one canonical site name, site code, or known alias from the site registry. Do not enter Multiple, Other, Unknown, a list, or free-form notes. If more than one site is affected, enter the primary site only; leave blank if no single site applies."
+      description: "Automation normalizes this answer through the site registry and writes the canonical value to the Organization Issue Field `Site`. Enter one canonical site name, site code, or known alias. Do not enter Multiple, Other, Unknown, a list, or free-form notes. If more than one site is affected, enter the primary site only; leave blank if no single site applies."
       placeholder: e.g., SLC / Salt Lake City International Airport
     validations:
       required: false
